@@ -1,0 +1,304 @@
+/**
+ * build gradle for a Minecraft Forge mod
+ *
+ * - Uses a separate build.properties config file (so build gradle can be upgraded while keeping settings)
+ * - Generates mod data files and constants
+ * - Tracks and auto-increments build number
+ * - Builds Forge mods
+ * - Uploads releases to Curseforge, Github, and Bintray
+ *
+ * Originally based on build.gradle from Botania by vazkii - https://botaniamod.net/
+ *
+*/
+
+// START do not edit
+buildscript {
+    repositories {
+        jcenter()
+        maven { url = "http://files.minecraftforge.net/maven" }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+    }
+}
+
+plugins {
+  id "com.matthewprenger.cursegradle" version "1.0.10"
+  id "co.riiid.gradle" version "0.4.2"
+  id "com.jfrog.bintray" version "1.7"
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'maven'
+// END do not edit
+//Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
+
+// --------------------------------------------------------------------------
+
+sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+compileJava {
+    sourceCompatibility = targetCompatibility = '1.8'
+}
+
+/// Load configuration
+
+loadBuildNumber()
+loadConfig()
+
+/// Build
+
+minecraft {
+    version = "${config.mc_version}-${config.forge_version}"
+    runDir = "run"
+
+    mappings = config.mc_mappings
+    // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
+
+    // This does the token replacement so names, version numbers, etc only need to be in one authoritative file
+    replace '@MOD_ID@', config.mod_id
+    replace '@MOD_NAME@', config.mod_name
+    replace '@BUILD@', buildnum.BUILD_NUMBER
+    replace '@VERSION@', config.version
+    replace '@DEPENDENCIES@', config.dependencies
+    replace '@UPDATEJSON@', config.updatejson
+
+    replaceIn 'Reference.java'
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+    apply plugin: 'java'
+}
+
+sourceSets {
+    // for default layout, see https://docs.gradle.org/current/userguide/java_plugin.html
+    main {
+        // default: src/main/java contains the Java source code
+        // default: src/test/java contains the Java tests
+        // custom: src/resources contains mod data (server-required) and assets (client-only)
+        resources { srcDirs = ["$projectDir/src/resources"] }
+    }
+}
+
+dependencies {
+    // you may put jars on which you depend on in ./libs
+    // or you may define them like so..
+    //compile "some.group:artifact:version:classifier"
+    //compile "some.group:artifact:version"
+
+    // real examples
+    //compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
+    //compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env
+
+    // for more info...
+    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
+    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+
+}
+
+processResources {
+    // ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "minecraft.version", project.minecraft.version
+    inputs.property "updatejson", config.updatejson
+
+    // replace stuff in mcmod.info and pack.mcmeta, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info', 'pack.mcmeta'
+
+        // replace mcmod.info variables with build.properties settings
+	expand(getMergedConfig())
+    }
+
+    // copy everything else, thats not the above listed files
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info', 'pack.mcmeta'
+    }
+}
+
+jar {
+    //rename the default output, for some better sanity with scripts
+    archiveName = "${baseName}-${minecraft.version}-${version}.${extension}"
+
+    exclude "**/*.bat"
+    exclude "**/*.psd"
+    exclude "**/*.exe"
+}
+
+// --------------------------------------------------------------------------
+
+/// CurseGradle
+// See https://github.com/matthewprenger/CurseGradle
+
+curseforge {
+    group 'upload'
+    description 'Upload release to Curseforge'
+    apiKey = priv.curseforge_key
+    project {
+        id = config.curseforge_id
+        changelog = { ->
+            return getChangeInfo()
+        }
+        releaseType = "release"
+    }
+}
+ 
+/// Github
+// See https://github.com/riiid/gradle-github-plugin
+
+github {
+    group 'upload'
+    description 'Upload release and build artifacts to Github'
+    owner = config.github_userz
+    repo = config.github_repo
+    token = priv.github_token
+    name = "${config.version}"
+    tagName = "${config.version}"
+    body = getChangeInfo()
+    assets = [ getArchivePath() ]
+}
+
+/// Bintray
+// See https://github.com/bintray/gradle-bintray-plugin#readme
+
+def githubUrl = "https://github.com/${config.github_userz}/${config.github_repo}"
+def repoUrl = "${githubUrl}.git"
+
+bintray {
+    group 'upload'
+    description 'Upload release and build artifacts to Bintray'
+    user = config.bintray_user
+    key = priv.bintray_api_key
+    configurations = ['archives']
+    pkg {
+        repo = config.bintray_repo
+        name = config.bintray_package
+        licenses = ["${config.license}"]
+	websiteUrl  = config.url
+        issueTrackerUrl="${githubUrl}/issues"
+        vcsUrl = repoUrl
+        labels = ['minecraft', 'forge', 'minecraft-mod' ]
+        publish = true
+        githubRepo = "${config.github_userz}/${config.github_repo}"
+        githubReleaseNotesFile = 'README.md' 
+        version {
+            name = "${config.version}"
+            desc = getChangeInfo()
+            websiteUrl="${config.url}"
+            vcsTag = "${config.version}"
+            released = new Date()
+        }
+    }
+}
+
+/// Uploads
+
+// upload built mod and/or artifacts to all release/artifact locations
+task uploadAll {
+    group 'upload'
+    description 'Upload built mod and/or artifacts to all release/artifact locations'
+    dependsOn 'curseforge'
+    dependsOn 'githubRelease'
+    dependsOn 'bintrayUpload'
+}
+
+// --------------------------------------------------------------------------
+// Local functions
+
+/// Misc
+
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
+
+// get this version's changelog from Forge-format update.json
+def getChangeInfo() {
+    def filename = "${projectDir}/${config.changelog}"
+    def updateJsonFile = new File(filename)
+    if (!updateJsonFile.isFile()) {
+        throw new GradleException("${filename} missing")               
+    }
+    def updateJson = new JsonSlurper().parse(updateJsonFile) as Map
+    // this should error if changelog is missing change for this version - add one!
+    if (!updateJson.containsKey("${minecraft.version}") || !updateJson."${minecraft.version}".containsKey("${config.version}")) {
+        throw new GradleException("${filename} missing changelog for MC ${minecraft.version} ${config.mod_id} ${config.version}")               
+    }
+    return new String(updateJson."${minecraft.version}"."${config.version}")
+}
+
+// build our own archive path that is relative and unix-format
+// since jar.archivePath is Windows format absolute path and github plugin makes ugly Github release asset file name from it
+def getArchivePath() {
+    return new String("build/libs/${jar.archiveName}")
+}
+
+/// Build number tracking
+
+// load the previous build number, and increment in-memory for this build
+def loadBuildNumber() {
+    ext.versionFile = file('version.properties')
+    ext.buildnum = new Properties([BUILD_NUMBER: "0"]);
+    if (versionFile.isFile()) {
+        versionFile.withReader { buildnum.load(it) }
+    }
+    def buildNumber = Integer.toString(Integer.parseInt(buildnum.BUILD_NUMBER) + 1)
+    buildnum.BUILD_NUMBER = buildNumber
+}
+
+// save the new build number
+task('saveBuildNumber') {
+    doLast {
+       versionFile.withWriter { buildnum.store(it, "Automated build number increase") }
+    }
+}
+
+// trigger saving new build number when the build actually starts
+tasks.whenTaskAdded { task ->
+    if (task.name == 'build') {
+        task.dependsOn 'saveBuildNumber'
+    }
+}
+
+/// Configuration
+
+// parse the config file (in Groovy format)
+def parseConfig(File config) {
+    config.withReader {
+        return (new ConfigSlurper().parse(config.toURI().toURL()))
+    }
+}
+
+// if the file exists, parse the config file (in Groovy format)
+def parseConfigIf(File config) {
+    if (config.isFile()) {
+       return parseConfig(config)
+    }
+    return new ConfigObject()
+}
+
+// load build configuration properties and set any dependent data
+def loadConfig() {
+    def configFile = file('build.properties')
+    ext.config = parseConfig(configFile)
+    def privateFile = file('private.properties')
+    ext.priv = parseConfigIf(privateFile)
+
+    version = config.version
+    group = config.group // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+    archivesBaseName = config.mod_id
+}
+
+// Merge different configs before passing for expansion which can only take only config
+def getMergedConfig() {
+    def mergedConfig = new ConfigObject()
+    mergedConfig << project.properties
+    mergedConfig << config
+    return mergedConfig
+}
+
+// --------------------------------------------------------------------------
+// Default task
+
+build {
+}
