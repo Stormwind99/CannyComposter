@@ -1,4 +1,4 @@
-package examplens.examplemod;
+package com.wumple.composter;
 
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;

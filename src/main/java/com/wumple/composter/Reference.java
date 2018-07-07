@@ -1,4 +1,4 @@
-package examplens.examplemod;
+package com.wumple.composter;
 
 public class Reference
 {
@@ -15,8 +15,8 @@ public class Reference
 
     /*
     // debugger settings since no Gradle string replacement
-    public static final String MOD_ID = "examplemod";
-    public static final String MOD_NAME = "ExampleMod";
+    public static final String MOD_ID = "composter";
+    public static final String MOD_NAME = "Composter";
     public static final String BUILD = "99";
     public static final String MOD_VERSION = "9.9.9";
     public static final String DEPENDENCIES = "";

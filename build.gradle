@@ -221,10 +221,11 @@ def getChangeInfo() {
     }
     def updateJson = new JsonSlurper().parse(updateJsonFile) as Map
     // this should error if changelog is missing change for this version - add one!
-    if (!updateJson.containsKey("${minecraft.version}") || !updateJson."${minecraft.version}".containsKey("${config.version}")) {
-        throw new GradleException("${filename} missing changelog for MC ${minecraft.version} ${config.mod_id} ${config.version}")               
+    def info = updateJson.find{ it.key == "${minecraft.version}"}?.value?.find{ it.key == "${config.version}"}?.value
+    if (!info) {
+        throw new GradleException("${filename} missing changelog for MC ${minecraft.version} ${config.mod_id} ${config.version}")
     }
-    return new String(updateJson."${minecraft.version}"."${config.version}")
+    return info
 }
 
 // build our own archive path that is relative and unix-format

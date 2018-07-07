@@ -1,4 +1,4 @@
-# ExampleMod
+# Composter
 
 This is an automated Minecraft Forge mod template.
 
