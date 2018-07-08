@@ -1,7 +1,6 @@
 package com.wumple.composter;
 
 import net.minecraftforge.common.config.Config;
-import net.minecraftforge.common.config.Config.Comment;
 import net.minecraftforge.common.config.Config.Name;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
@@ -12,7 +11,14 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 @Mod.EventBusSubscriber(modid = Reference.MOD_ID)
 public class ModConfig
 {
-
+	@Name("Enable compost bonemeal")
+	@Config.Comment("Compost triggers plant growth like bonemeal.")
+    public static boolean enableCompostBonemeal = true;
+	
+	@Name("Compost strength")
+	@Config.Comment("The probability that compost will succeed relative to bonemeal.")
+    public static double compostBonemealStrength = 0.5F;
+    
     @Name("Debugging")
     @Config.Comment("Debugging options")
     public static Debugging zdebugging = new Debugging();

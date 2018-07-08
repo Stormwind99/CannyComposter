@@ -1,25 +1,10 @@
 package com.wumple.composter;
 
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import com.wumple.util.proxy.CombinedClientProxy;
 
-public class ClientProxy implements ISidedProxy
-{
-    @Override
-    public void preInit(FMLPreInitializationEvent event)
+public class ClientProxy extends CombinedClientProxy
+{  
+    public void registerRenderers ()
     {
-    }
-
-    @Override
-    public void init(FMLInitializationEvent event)
-    {
-
-    }
-
-    @Override
-    public void postInit(FMLPostInitializationEvent event)
-    {
-
     }
 }
