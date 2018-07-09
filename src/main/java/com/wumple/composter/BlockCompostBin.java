@@ -10,6 +10,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
@@ -51,12 +52,23 @@ public class BlockCompostBin extends BlockContainer
     public int getRenderType () {
         return ClientProxy.compostBinRenderID;
     }
-
+    */
+    
+    /**
+     * Used to determine ambient occlusion and culling when rebuilding chunks for render
+     * @deprecated call via {@link IBlockState#isOpaqueCube()} whenever possible. Implementing/overriding is fine.
+     */
     @Override
-    public boolean isOpaqueCube () {
+    public boolean isOpaqueCube(IBlockState state)
+    {
         return false;
     }
-    */
+    
+    @SideOnly(Side.CLIENT)
+    public BlockRenderLayer getBlockLayer()
+    {
+        return BlockRenderLayer.CUTOUT;
+    }
 
     @Override
     public boolean onBlockActivated(World world, BlockPos coords, IBlockState p_onBlockActivated_3_, EntityPlayer player, EnumHand handcontents, EnumFacing p_onBlockActivated_6_, float p_onBlockActivated_7_, float p_onBlockActivated_8_, float p_onBlockActivated_9_)

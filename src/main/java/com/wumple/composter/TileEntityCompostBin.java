@@ -1,5 +1,7 @@
 package com.wumple.composter;
 
+import com.wumple.util.SUtil;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
@@ -14,7 +16,13 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class TileEntityCompostBin extends TileEntity implements IInventory, ITickable
 {
-	private NonNullList<ItemStack> itemStacks = NonNullList.<ItemStack>withSize(10, ItemStack.EMPTY);
+	static final int COMPOSTING_SLOTS = 9;
+	static final int TOTAL_SLOTS = COMPOSTING_SLOTS + 1;
+	static final int OUTPUT_SLOT = TOTAL_SLOTS - 1; 
+	static final int DECOMPOST_COUNT_MAX = 8;
+	static final int DECOMPOSE_TIME_MAX = 200;
+	
+	private NonNullList<ItemStack> itemStacks = NonNullList.<ItemStack>withSize(TOTAL_SLOTS, ItemStack.EMPTY);
 
     // The number of ticks remaining to decompose the current item
     public int binDecomposeTime;
@@ -38,7 +46,8 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound compound) {
+    public void readFromNBT(NBTTagCompound compound)
+    {
         super.readFromNBT(compound);
         
         ItemStackHelper.loadAllItems(compound, this.itemStacks);
@@ -48,9 +57,13 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         itemDecomposeCount = compound.getByte("DecompCount");
 
         if (currentItemSlot >= 0)
+        {
             currentItemDecomposeTime = getItemDecomposeTime(itemStacks.get(currentItemSlot));
+        }
         else
+        {
             currentItemDecomposeTime = 0;
+        }
 
         if (compound.hasKey("CustomName", 8))
         {
@@ -59,7 +72,8 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     }
 
     @Override
-    public NBTTagCompound writeToNBT (NBTTagCompound compound) {
+    public NBTTagCompound writeToNBT (NBTTagCompound compound)
+    {
         super.writeToNBT(compound);
 
         compound.setShort("DecompTime", (short)binDecomposeTime);
@@ -92,21 +106,24 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     }
     */
 
-    public boolean isDecomposing () {
+    public boolean isDecomposing ()
+    {
         return binDecomposeTime > 0;
     }
 
     @SideOnly(Side.CLIENT)
-    public int getDecomposeTimeRemainingScaled (int scale) {
+    public int getDecomposeTimeRemainingScaled (int scale)
+    {
         if (currentItemDecomposeTime == 0)
-            currentItemDecomposeTime = 200;
+            currentItemDecomposeTime = DECOMPOSE_TIME_MAX;
 
-        return (8 - itemDecomposeCount) * scale / 9 + (binDecomposeTime * scale / (currentItemDecomposeTime * 9));
+        return (DECOMPOST_COUNT_MAX - itemDecomposeCount) * scale / COMPOSTING_SLOTS + (binDecomposeTime * scale / (currentItemDecomposeTime * COMPOSTING_SLOTS));
 
         //return binDecomposeTime * scale / currentItemDecomposeTime;
     }
 
-    public void update() {
+    public void update()
+    {
         boolean isDecomposing = binDecomposeTime > 0;
         int decompCount = itemDecomposeCount;
 
@@ -116,18 +133,16 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
             --binDecomposeTime;
 
         if (!this.getWorld().isRemote) {
-            int filledSlotCount = 0;
-            for (int i = 0; i < 9; i++)
-                filledSlotCount += (itemStacks.get(i) != null) ? 1 : 0;
+            int filledSlotCount = getFilledSlots();
 
             if (binDecomposeTime != 0 || filledSlotCount > 0) {
                 if (binDecomposeTime == 0) {
                     /*if (currentItemSlot >= 0 && itemStacks.get(currentItemSlot) != null) {
-                        --itemStacks.get(currentItemSlot).getCount();
+                        itemStacks.get(currentItemSlot).shrink(1);
                         shouldUpdate = true;
 
-                        if (itemStacks.get(currentItemSlot).getCount() == 0)
-                            itemStacks.get(currentItemSlot) = itemStacks.get(currentItemSlot).getItem().getContainerItem(itemStacks.get(currentItemSlot));
+                        if (itemStacks.get(currentItemSlot).isEmpty() == 0)
+                            itemStacks.set(currentItemSlot, itemStacks.get(currentItemSlot).getItem().getContainerItem(itemStacks.get(currentItemSlot)));
                     }*/
                     if (canCompost()) {
                         compostItem();
@@ -137,7 +152,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
                     currentItemSlot = selectRandomFilledSlot();
                     currentItemDecomposeTime = 0;
 
-                    if (currentItemSlot >= 0 && (itemStacks.get(9) == null || itemStacks.get(9).getCount() < 64)) {
+                    if (currentItemSlot >= 0 && (!hasOutputItems() || itemStacks.get(OUTPUT_SLOT).getCount() < 64)) {
                         currentItemDecomposeTime = getItemDecomposeTime(itemStacks.get(currentItemSlot));
                         binDecomposeTime = currentItemDecomposeTime;
 
@@ -160,66 +175,82 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     private boolean canCompost () {
         if (currentItemSlot == -1)
             return false;
-        if (itemStacks.get(currentItemSlot) == null)
-            return false;
-        if (itemStacks.get(currentItemSlot).getCount() == 0)
-            return false;
+        if (SUtil.isEmpty(itemStacks.get(currentItemSlot)))
+        	return false;
 
-        if ((itemStacks.get(9) == null) || itemStacks.get(9).isEmpty())
+        if (!hasOutputItems())
             return true;
 
-        int result = itemStacks.get(9).getCount() + 1;
-        return result <= getInventoryStackLimit() && result <= itemStacks.get(9).getMaxStackSize();
+        int result = itemStacks.get(OUTPUT_SLOT).getCount() + 1;
+        return result <= getInventoryStackLimit() && result <= itemStacks.get(OUTPUT_SLOT).getMaxStackSize();
     }
 
-    public void compostItem () {
-        if (canCompost()) {
-            if (itemDecomposeCount < 8)
+    public void compostItem ()
+    {
+        if (canCompost())
+        {
+            if (itemDecomposeCount < DECOMPOST_COUNT_MAX)
+            {
                 itemDecomposeCount++;
+            }
 
-            if (itemDecomposeCount == 8) {
+            if (itemDecomposeCount == DECOMPOST_COUNT_MAX)
+            {
                 ItemStack resultStack = new ItemStack(ObjectHolder.compost);
 
-                if (itemStacks.get(9) == null)
-                    itemStacks.set(9, resultStack);
-                else if (itemStacks.get(9).getItem() == resultStack.getItem())
-                    itemStacks.get(9).setCount( itemStacks.get(9).getCount() + resultStack.getCount() );
+                if (!hasOutputItems())
+                {
+                    itemStacks.set(OUTPUT_SLOT, resultStack);
+                }
+                else if (itemStacks.get(OUTPUT_SLOT).getItem() == resultStack.getItem())
+                {
+                    itemStacks.get(OUTPUT_SLOT).grow(1);
+                }
 
                 itemDecomposeCount = 0;
             }
 
-            itemStacks.get(currentItemSlot).setCount( itemStacks.get(currentItemSlot).getCount() - 1);
+            itemStacks.get(currentItemSlot).shrink(1);
             if (itemStacks.get(currentItemSlot).getCount() == 0)
+            {
                 itemStacks.set(currentItemSlot, ItemStack.EMPTY);
+            }
 
             currentItemSlot = -1;
         }
     }
-
-    public boolean hasInputItems () {
+    
+    protected int getFilledSlots()
+    {
         int filledSlotCount = 0;
-        for (int i = 0; i < 9; i++)
-            filledSlotCount += (itemStacks.get(i) != null) ? 1 : 0;
+        for (int i = 0; i < COMPOSTING_SLOTS; i++)
+        {
+            filledSlotCount += (!SUtil.isEmpty(itemStacks.get(i))) ? 1 : 0;
+        }
 
-        return filledSlotCount > 0;
+        return filledSlotCount;
     }
 
-    public boolean hasOutputItems () {
-    	ItemStack stack = itemStacks.get(9);
-        return (stack != null) && (!stack.isEmpty()) ;
+    public boolean hasInputItems ()
+    {
+        return getFilledSlots() > 0;
     }
 
-    private int selectRandomFilledSlot () {
-        int filledSlotCount = 0;
-        for (int i = 0; i < 9; i++)
-            filledSlotCount += (itemStacks.get(i) != null) ? 1 : 0;
+    public boolean hasOutputItems ()
+    {
+        return !SUtil.isEmpty(itemStacks.get(OUTPUT_SLOT));
+    }
 
+    private int selectRandomFilledSlot ()
+    {
+        int filledSlotCount = getFilledSlots();
+     
         if (filledSlotCount == 0)
             return -1;
 
         int index = this.getWorld().rand.nextInt(filledSlotCount);
-        for (int i = 0, c = 0; i < 9; i++) {
-            if (itemStacks.get(i) != null) {
+        for (int i = 0, c = 0; i < COMPOSTING_SLOTS; i++) {
+            if (!SUtil.isEmpty(itemStacks.get(i))) {
                 if (c++ == index)
                     return i;
             }
@@ -229,8 +260,10 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     }
 
     public static int getItemDecomposeTime (ItemStack itemStack) {
-        if ((itemStack == null) || itemStack.isEmpty())
+        if (SUtil.isEmpty(itemStack))
+        {
             return 0;
+        }
 
         /*
         // TODO
@@ -288,7 +321,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     {
         for (ItemStack itemstack : this.itemStacks)
         {
-            if ((itemstack != null) && !itemstack.isEmpty())
+            if (!SUtil.isEmpty(itemstack))
             {
                 return false;
             }
@@ -298,15 +331,18 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     }
 
     @Override
-    public boolean isItemValidForSlot (int slot, ItemStack item) {
-        if (slot >= 0 && slot < 9)
+    public boolean isItemValidForSlot (int slot, ItemStack item)
+    {
+        if (slot >= 0 && slot < COMPOSTING_SLOTS)
+        {
             return isItemDecomposable(item);
+        }
 
         return false;
     }
 
     /*
-    private int[] accessSlots = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    private int[] accessSlots = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, COMPOSTING_SLOTS };
 
     @Override
     public int[] getAccessibleSlotsFromSide (int side) {
@@ -315,7 +351,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack item) {
-        if (slot == 9)
+        if (slot == OUTPUT_SLOT)
             return false;
 
         return isItemValidForSlot(slot, item);
@@ -323,7 +359,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
 
     @Override
     public boolean canExtractItem (int slot, ItemStack item, int side) {
-        if (slot != 9)
+        if (slot != OUTPUT_SLOT)
             return false;
 
         if (item == null)
@@ -351,7 +387,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     {
     	ItemStack stack = ItemStackHelper.getAndSplit(this.itemStacks, index, count);
     	
-        if (index == 9)
+        if (index == OUTPUT_SLOT)
         {
             BlockCompostBin.updateBlockState(this.getWorld(), this.getPos());
         }

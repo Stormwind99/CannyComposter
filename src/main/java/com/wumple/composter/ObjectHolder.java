@@ -8,10 +8,11 @@ import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 
 @GameRegistry.ObjectHolder("composter")
 public class ObjectHolder {
@@ -19,10 +20,10 @@ public class ObjectHolder {
     @GameRegistry.ObjectHolder("composter:compost_bin")
     public static /*final*/ Block compost_bin = null;
     
-	//@GameRegistry.ObjectHolder("compost:compost_bin_item")
+	//@GameRegistry.ObjectHolder("composter:compost_bin_item")
     public static /*final*/ Item compost_bin_item = null;
 
-	//@GameRegistry.ObjectHolder("compost:compost")
+	//@GameRegistry.ObjectHolder("composter:compost")
     public static /*final*/ Item compost = null;
 
     // ----------------------------------------------------------------------
@@ -63,6 +64,11 @@ public class ObjectHolder {
         	RegistrationHelpers.registerRender(compost);
 
             // TODO ClientRegistry.bindTileEntitySpecialRenderer(TileEntityCompostBin.class, new TileEntityCompostRenderer());
+        }
+        
+        public static void registerGuiHandlers()
+        {
+        	 NetworkRegistry.INSTANCE.registerGuiHandler(Composter.instance, new ComposterGuiHandler());
         }
 	}
 }

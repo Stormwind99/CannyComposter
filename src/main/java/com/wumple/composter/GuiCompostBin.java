@@ -10,7 +10,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GuiCompostBin extends GuiContainer
 {
-    private static final ResourceLocation compostBinGuiTextures = new ResourceLocation("gardencore", "textures/gui/compostBin.png");
+    private static final ResourceLocation compostBinGuiTextures = new ResourceLocation("composter", "textures/gui/compost_bin.png");
     private TileEntityCompostBin tileCompost;
 
     private Slot hoveredSlot;
