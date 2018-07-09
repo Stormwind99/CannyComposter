@@ -25,7 +25,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
 	private NonNullList<ItemStack> itemStacks = NonNullList.<ItemStack>withSize(TOTAL_SLOTS, ItemStack.EMPTY);
 
     // The number of ticks remaining to decompose the current item
-    public int binDecomposeTime;
+    public int binDecomposeTime = DECOMPOSE_TIME_MAX;
 
     // The slot actively being decomposed
     private int currentItemSlot;
