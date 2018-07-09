@@ -82,6 +82,12 @@ public class RegistrationHelpers
     public static void registerRender(Block block)
     {
     	Item item = Item.getItemFromBlock(block);
+    	registerRender(block, item);
+    }
+    
+    @SideOnly(Side.CLIENT)
+    public static void registerRender(Block block, Item item)
+    {
         ModelResourceLocation loc = new ModelResourceLocation(item.getRegistryName(), "inventory");
         ModelLoader.setCustomModelResourceLocation(item, 0, loc);
     }

@@ -62,7 +62,7 @@ public class ObjectHolder {
         public static void registerRenders(ModelRegistryEvent event)
         {
         	RegistrationHelpers.registerRender(compost);
-        	RegistrationHelpers.registerRender(compost_bin);
+        	RegistrationHelpers.registerRender(compost_bin, compost_bin_item);
 
             // TODO ClientRegistry.bindTileEntitySpecialRenderer(TileEntityCompostBin.class, new TileEntityCompostRenderer());
         }
