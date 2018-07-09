@@ -22,18 +22,22 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
 	static final int DECOMPOST_COUNT_MAX = 8;
 	static final int DECOMPOSE_TIME_MAX = 200;
 	static final int STACK_LIMIT = 64;
+	static final int NO_SLOT = -1;
+	static final int NO_DECOMPOSE_TIME = -1;
+	static final double USE_RANGE = 64.0D;
 	
 	private NonNullList<ItemStack> itemStacks = NonNullList.<ItemStack>withSize(TOTAL_SLOTS, ItemStack.EMPTY);
 
     // The number of ticks remaining to decompose the current item
-    public int binDecomposeTime;
+    public int binDecomposeTime = NO_DECOMPOSE_TIME;
 
     // The slot actively being decomposed
-    private int currentItemSlot;
+    private int currentItemSlot = NO_SLOT;
 
     // The number of ticks that a fresh copy of the currently-decomposing item would decompose for
     public int currentItemDecomposeTime;
 
+    // number of items decomposed since last compost generation
     public int itemDecomposeCount;
 
     private String customName;
@@ -41,7 +45,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     // ----------------------------------------------------------------------
     // TileEntityCompostBin
     
-    public int getDecompTime ()
+    public int getDecompTime()
     {
         return binDecomposeTime;
     }
@@ -67,21 +71,28 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         //return binDecomposeTime * scale / currentItemDecomposeTime;
     }
 
-
     private boolean canCompost()
     {
-        if (currentItemSlot == -1)
-            return false;
-        
-        if (SUtil.isEmpty(itemStacks.get(currentItemSlot)))
+        if ( (currentItemSlot == NO_SLOT) || (SUtil.isEmpty(itemStacks.get(currentItemSlot))) )
+        {
         	return false;
+        }
 
         if (!hasOutputItems())
+        {
             return true;
-
-        int result = itemStacks.get(OUTPUT_SLOT).getCount() + 1;
+        }
         
-        return (result <= getInventoryStackLimit()) && (result <= itemStacks.get(OUTPUT_SLOT).getMaxStackSize());
+        ItemStack outputSlotStack = itemStacks.get(OUTPUT_SLOT);
+        
+        if ( (outputSlotStack.getItem() != ObjectHolder.compost) && !outputSlotStack.isEmpty() )
+        {
+        	return false;
+        }
+
+        int result = outputSlotStack.getCount() + 1;
+        
+        return (result <= getInventoryStackLimit()) && (result <= outputSlotStack.getMaxStackSize());
     }
 
     public void compostItem()
@@ -95,13 +106,13 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
 
             if (itemDecomposeCount >= DECOMPOST_COUNT_MAX)
             {
-                ItemStack resultStack = new ItemStack(ObjectHolder.compost);
-
+                
                 if (!hasOutputItems())
                 {
+                	ItemStack resultStack = new ItemStack(ObjectHolder.compost);
                     itemStacks.set(OUTPUT_SLOT, resultStack);
                 }
-                else if (itemStacks.get(OUTPUT_SLOT).getItem() == resultStack.getItem())
+                else
                 {
                     itemStacks.get(OUTPUT_SLOT).grow(1);
                 }
@@ -115,7 +126,8 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
                 itemStacks.set(currentItemSlot, ItemStack.EMPTY);
             }
 
-            currentItemSlot = -1;
+            currentItemSlot = NO_SLOT;
+            binDecomposeTime = NO_DECOMPOSE_TIME; 
         }
     }
     
@@ -146,7 +158,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
      
         if (filledSlotCount == 0)
         {
-            return -1;
+            return NO_SLOT;
         }
 
         int index = this.getWorld().rand.nextInt(filledSlotCount);
@@ -161,14 +173,14 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
             }
         }
 
-        return -1;
+        return NO_SLOT;
     }
 
     public static int getItemDecomposeTime(ItemStack itemStack)
     {
         if (SUtil.isEmpty(itemStack))
         {
-            return 0;
+            return NO_DECOMPOSE_TIME;
         }
 
         /*
@@ -180,17 +192,12 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         return material.getDecomposeTime();
         */
         
-        return (itemStack.getItem() instanceof ItemFood) ? 125 : 0;
+        return (itemStack.getItem() instanceof ItemFood) ? 125 : NO_DECOMPOSE_TIME;
     }
 
     public static boolean isItemDecomposable(ItemStack itemStack)
     {
-        return getItemDecomposeTime(itemStack) > 0;
-    }
-
-    public void setName(String name)
-    {
-        this.customName = name;
+        return getItemDecomposeTime(itemStack) > NO_DECOMPOSE_TIME;
     }
 
     public boolean isEmpty()
@@ -204,6 +211,21 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         }
 
         return true;
+    }
+    
+    protected void updateBlockState()
+    {
+        BlockCompostBin.updateBlockState(this.getWorld(), this.getPos());
+    }
+    
+    public void setName(String name)
+    {
+        this.customName = name;
+    }
+    
+    public String getRealName()
+    {
+    	return "container.composter.compost_bin";
     }
     
     // ----------------------------------------------------------------------
@@ -254,15 +276,25 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         return compound;
     }
     
+    /**
+     * invalidates a tile entity
+     */
+    public void invalidate()
+    {
+        super.invalidate();
+        this.updateContainingBlockInfo();
+    }
+    
     // ----------------------------------------------------------------------
     // IWorldNameable
 
     /**
      * Get the name of this object. For players this returns their username
      */
+    @Override
     public String getName()
     {
-        return this.hasCustomName() ? this.customName : "composter.compost_bin";
+        return this.hasCustomName() ? this.customName : getRealName();
     }
 
     /**
@@ -278,27 +310,39 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     
     public void update()
     {
-        boolean isDecomposing = binDecomposeTime > 0;
+        boolean isDecomposing = isDecomposing();
         int decompCount = itemDecomposeCount;
 
         boolean shouldUpdate = false;
 
-        if (binDecomposeTime > 0)
+        if (isDecomposing())
+        {
             --binDecomposeTime;
+        }
 
-        if (!this.getWorld().isRemote) {
+        if (!this.getWorld().isRemote)
+        {
             int filledSlotCount = getFilledSlots();
 
-            if (binDecomposeTime != 0 || filledSlotCount > 0) {
-                if (binDecomposeTime == 0) {
-                    /*if (currentItemSlot >= 0 && itemStacks.get(currentItemSlot) != null) {
+            if ( isDecomposing() || (filledSlotCount > 0) )
+            {
+                if (binDecomposeTime <= 0)
+                {
+                    /*
+                    if ( (currentItemSlot >= 0) && (itemStacks.get(currentItemSlot) != null) )
+                    {
                         itemStacks.get(currentItemSlot).shrink(1);
                         shouldUpdate = true;
 
+						// MAYBE bucket/etc support?
                         if (itemStacks.get(currentItemSlot).isEmpty() == 0)
-                            itemStacks.set(currentItemSlot, itemStacks.get(currentItemSlot).getItem().getContainerItem(itemStacks.get(currentItemSlot)));
-                    }*/
-                    if (canCompost()) {
+                        {
+                        	itemStacks.set(currentItemSlot, itemStacks.get(currentItemSlot).getItem().getContainerItem(itemStacks.get(currentItemSlot)));
+                        }
+                    }
+                    */
+                    if (canCompost())
+                    {
                         compostItem();
                         shouldUpdate = true;
                     }
@@ -306,20 +350,23 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
                     currentItemSlot = selectRandomFilledSlot();
                     currentItemDecomposeTime = 0;
 
-                    if (currentItemSlot >= 0 && (!hasOutputItems() || itemStacks.get(OUTPUT_SLOT).getCount() < 64)) {
+                    if ( (currentItemSlot >= 0) && (!hasOutputItems() || itemStacks.get(OUTPUT_SLOT).getCount() < STACK_LIMIT) )
+                    {
                         currentItemDecomposeTime = getItemDecomposeTime(itemStacks.get(currentItemSlot));
                         binDecomposeTime = currentItemDecomposeTime;
 
                         if (binDecomposeTime > 0)
+                        {
                             shouldUpdate = true;
+                        }
                     }
                 }
             }
 
-            if (isDecomposing != binDecomposeTime > 0 || decompCount != itemDecomposeCount)
+            if (isDecomposing != binDecomposeTime > 0 || (decompCount != itemDecomposeCount) )
             {
                 shouldUpdate = true;
-                BlockCompostBin.updateBlockState(this.getWorld(), this.getPos());
+                updateBlockState();
             }
         }
 
@@ -344,7 +391,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     @Override
     public boolean isItemValidForSlot (int slot, ItemStack item)
     {
-        if (slot >= 0 && slot < COMPOSTING_SLOTS)
+        if ( (slot >= 0) && (slot < COMPOSTING_SLOTS) )
         {
             return isItemDecomposable(item);
         }
@@ -358,7 +405,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     @Override
     public ItemStack getStackInSlot(int index)
     {
-        return index >= 0 && index < this.itemStacks.size() ? (ItemStack)this.itemStacks.get(index) : ItemStack.EMPTY;
+        return (index >= 0) && (index < this.itemStacks.size()) ? (ItemStack)this.itemStacks.get(index) : ItemStack.EMPTY;
     }
 
     /**
@@ -371,7 +418,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     	
         if (index == OUTPUT_SLOT)
         {
-            BlockCompostBin.updateBlockState(this.getWorld(), this.getPos());
+            updateBlockState();
         }
         
         return stack;
@@ -424,7 +471,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         }
         else
         {
-            return player.getDistanceSq((double)this.pos.getX() + 0.5D, (double)this.pos.getY() + 0.5D, (double)this.pos.getZ() + 0.5D) <= 64.0D;
+            return player.getDistanceSq((double)this.pos.getX() + 0.5D, (double)this.pos.getY() + 0.5D, (double)this.pos.getZ() + 0.5D) <= USE_RANGE;
         }
     }
 
