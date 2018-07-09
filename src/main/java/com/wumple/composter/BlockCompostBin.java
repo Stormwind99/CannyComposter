@@ -89,8 +89,8 @@ public class BlockCompostBin extends BlockContainer
     @SideOnly(Side.CLIENT)
     public BlockRenderLayer getBlockLayer()
     {
-        // TODO return BlockRenderLayer.CUTOUT;
-        return BlockRenderLayer.SOLID;
+        return BlockRenderLayer.CUTOUT;
+        //return BlockRenderLayer.SOLID;
     }
 
     /*

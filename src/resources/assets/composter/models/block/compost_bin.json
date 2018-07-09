@@ -1,8 +1,12 @@
 {
-    "parent": "block/cube_bottom_top",
+    "parent": "block/cube",
     "textures": {
-        "top": "composter:blocks/compost_bin_top",
-        "side": "composter:blocks/compost_bin_side",
-        "bottom": "composter:blocks/compost_bin_bottom"
+        "particle": "composter:blocks/compost_bin_side",
+        "down": "composter:blocks/compost_bin_bottom",
+        "up": "composter:blocks/compost_bin_top",
+        "north": "composter:blocks/compost_bin_side",
+        "east": "composter:blocks/compost_bin_side",
+        "south": "composter:blocks/compost_bin_side",
+        "west": "composter:blocks/compost_bin_side"
     }
 }
