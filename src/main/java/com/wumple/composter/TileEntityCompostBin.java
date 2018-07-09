@@ -64,11 +64,12 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     public int getDecomposeTimeRemainingScaled(int scale)
     {
         if (currentItemDecomposeTime == 0)
+        {
             currentItemDecomposeTime = DECOMPOSE_TIME_MAX;
-
-        return (DECOMPOST_COUNT_MAX - itemDecomposeCount) * scale / COMPOSTING_SLOTS + (binDecomposeTime * scale / (currentItemDecomposeTime * COMPOSTING_SLOTS));
+        }
 
         //return binDecomposeTime * scale / currentItemDecomposeTime;
+        return (DECOMPOST_COUNT_MAX - itemDecomposeCount) * scale / COMPOSTING_SLOTS + (binDecomposeTime * scale / (currentItemDecomposeTime * COMPOSTING_SLOTS));
     }
 
     private boolean canCompost()
@@ -226,6 +227,24 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     public String getRealName()
     {
     	return "container.composter.compost_bin";
+    }
+    
+
+    protected void updateInternalState(int index)
+    {
+        if (index == OUTPUT_SLOT)
+        {
+            updateBlockState();
+            markDirty();
+        }  
+        else if ((index == currentItemSlot) && SUtil.isEmpty(itemStacks.get(index)) )
+        {
+            currentItemSlot = NO_SLOT;
+            binDecomposeTime = NO_DECOMPOSE_TIME;
+            currentItemDecomposeTime = 0;
+            updateBlockState();
+            markDirty();
+        }
     }
     
     // ----------------------------------------------------------------------
@@ -407,7 +426,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     {
         return (index >= 0) && (index < this.itemStacks.size()) ? (ItemStack)this.itemStacks.get(index) : ItemStack.EMPTY;
     }
-
+    
     /**
      * Removes up to a specified number of items from an inventory slot and returns them in a new stack.
      */
@@ -415,12 +434,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     public ItemStack decrStackSize(int index, int count)
     {
     	ItemStack stack = ItemStackHelper.getAndSplit(this.itemStacks, index, count);
-    	
-        if (index == OUTPUT_SLOT)
-        {
-            updateBlockState();
-        }
-        
+    	updateInternalState(index);
         return stack;
     }
 
@@ -430,7 +444,9 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     @Override
     public ItemStack removeStackFromSlot(int index)
     {
-        return ItemStackHelper.getAndRemove(this.itemStacks, index);
+    	ItemStack stack = ItemStackHelper.getAndRemove(this.itemStacks, index);
+    	updateInternalState(index);    	
+        return stack;
     }
 
     /**
