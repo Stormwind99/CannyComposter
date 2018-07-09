@@ -11,7 +11,8 @@ public class SlotCompostOutput extends Slot
     private EntityPlayer player;
     private int amountCrafted;
 
-    public SlotCompostOutput (EntityPlayer player, IInventory inputInventory, int par2, int par3, int par4) {
+    public SlotCompostOutput (EntityPlayer player, IInventory inputInventory, int par2, int par3, int par4)
+    {
         super(inputInventory, par2, par3, par4);
 
         this.player = player;
@@ -19,26 +20,32 @@ public class SlotCompostOutput extends Slot
     }
 
     @Override
-    public boolean isItemValid (ItemStack itemStack) {
+    public boolean isItemValid(ItemStack itemStack)
+    {
         return false;
     }
 
     @Override
-    public ItemStack decrStackSize (int count) {
+    public ItemStack decrStackSize(int count)
+    {
         if (getHasStack())
+        {
             amountCrafted += Math.min(count, getStack().getCount());
+        }
 
         return super.decrStackSize(count);
     }
 
     @Override
-    protected void onCrafting (ItemStack itemStack, int count) {
+    protected void onCrafting(ItemStack itemStack, int count)
+    {
         amountCrafted += count;
         super.onCrafting(itemStack, count);
     }
 
     @Override
-    protected void onCrafting (ItemStack itemStack) {
+    protected void onCrafting(ItemStack itemStack)
+    {
         itemStack.onCrafting(player.getEntityWorld(), player, amountCrafted);
         amountCrafted = 0;
 
@@ -46,7 +53,6 @@ public class SlotCompostOutput extends Slot
     }
 
     @Override
-
     public ItemStack onTake(EntityPlayer thePlayer, ItemStack stack)
     {
     	//FMLCommonHandler.instance().firePlayerCraftingEvent(thePlayer, stack, inputInventory);

@@ -123,7 +123,6 @@ public class ContainerCompostBin extends Container {
 			{
 				if (!mergeItemStack(slotStack, inventoryStart, hotbarEnd, true))
 				{
-					//return null;
 					return ItemStack.EMPTY;
 				}
 
@@ -144,7 +143,6 @@ public class ContainerCompostBin extends Container {
 					} else if (slotIndex >= hotbarStart && slotIndex < hotbarEnd
 							&& !this.mergeItemStack(slotStack, inventoryStart, hotbarStart, false))
 					{
-						//return null;
 						return ItemStack.EMPTY;
 					}
 				}
@@ -153,14 +151,12 @@ public class ContainerCompostBin extends Container {
 			// Try merge stack into inventory
 			else if (!mergeItemStack(slotStack, inventoryStart, hotbarEnd, false))
 			{
-				//return null;
 				return ItemStack.EMPTY;
 			}
 
 			if (slotStack.isEmpty())
 			{
 				slot.putStack(ItemStack.EMPTY);
-				//slot.putStack(null);
 			}
 			else
 			{
@@ -169,7 +165,6 @@ public class ContainerCompostBin extends Container {
 
 			if (slotStack.getCount() == itemStack.getCount())
 			{
-				//return null;
 				return ItemStack.EMPTY;
 			}
 

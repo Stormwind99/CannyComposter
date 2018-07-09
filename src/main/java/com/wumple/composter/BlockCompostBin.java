@@ -32,15 +32,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class BlockCompostBin extends BlockContainer
 {
-	/*
-    private static final int ICON_SIDE = 0;
-    private static final int ICON_TOP = 1;
-    private static final int ICON_BOTTOM = 2;
-    private static final int ICON_INNER = 3;
-
-    @SideOnly(Side.CLIENT)
-    IIcon[] icons;
-    */
+    // ----------------------------------------------------------------------
+    // BlockCompostBin
+	
+    public static final PropertyDirection FACING = BlockHorizontal.FACING;
 
     public BlockCompostBin ()
     {
@@ -58,63 +53,7 @@ public class BlockCompostBin extends BlockContainer
         
         RegistrationHelpers.nameHelper(this, "composter:compost_bin");
     }
-
-    /*
-    @Override
-    public boolean renderAsNormalBlock () {
-        return false;
-    }
-    
-
-    @Override
-    public int getRenderType () {
-        return ClientProxy.compostBinRenderID;
-    }
-    */
-    
-    /**
-     * Used to determine ambient occlusion and culling when rebuilding chunks for render
-     * @deprecated call via {@link IBlockState#isOpaqueCube()} whenever possible. Implementing/overriding is fine.
-     */
-    public boolean isOpaqueCube(IBlockState state)
-    {
-        return false;
-    }
-
-    /**
-     * @deprecated call via {@link IBlockState#isFullCube()} whenever possible. Implementing/overriding is fine.
-     */
-    public boolean isFullCube(IBlockState state)
-    {
-        return false;
-    }
-    
-    @SideOnly(Side.CLIENT)
-    public BlockRenderLayer getBlockLayer()
-    {
-        return BlockRenderLayer.CUTOUT;
-        //return BlockRenderLayer.SOLID;
-    }
-    
-    /**
-     * The type of render function called. MODEL for mixed tesr and static model, MODELBLOCK_ANIMATED for TESR-only,
-     * LIQUID for vanilla liquids, INVISIBLE to skip all rendering
-     * @deprecated call via {@link IBlockState#getRenderType()} whenever possible. Implementing/overriding is fine.
-     */
-    public EnumBlockRenderType getRenderType(IBlockState state)
-    {
-        return EnumBlockRenderType.MODEL;
-    }
-
-    /*
-    @Override
-    public boolean onBlockActivated(World world, BlockPos coords, IBlockState p_onBlockActivated_3_, EntityPlayer player, EnumHand handcontents, EnumFacing p_onBlockActivated_6_, float p_onBlockActivated_7_, float p_onBlockActivated_8_, float p_onBlockActivated_9_)
-    {
-    	player.openGui(Composter.instance, ComposterGuiHandler.compostBinGuiID, world, coords.getX(), coords.getY(), coords.getZ());
-        return true;
-    }
-    */
-
+        
     public static void updateBlockState (World world, BlockPos pos) 
     {
         TileEntityCompostBin te = (TileEntityCompostBin) world.getTileEntity(pos);
@@ -125,24 +64,50 @@ public class BlockCompostBin extends BlockContainer
 
         te.markDirty();
     }
-
+    
+    public TileEntityCompostBin getTileEntity (IBlockAccess world, BlockPos pos)
+    {
+        TileEntity te = world.getTileEntity(pos);
+        return ((te != null) && (te instanceof TileEntityCompostBin)) ? (TileEntityCompostBin) te : null;
+    }
+    
+    // from
+    // http://www.minecraftforge.net/forum/topic/42458-solved1102-blockstates-crashing/?do=findComment&comment=228689
+    protected BlockStateContainer createBlockState()
+    {
+        return new BlockStateContainer(this, new IProperty[] { FACING });
+    }
+    
+    // ----------------------------------------------------------------------
+    // Block
+    
     /**
-     * Called serverside after this block is replaced with another in Chunk, but before the Tile Entity is updated
+     * Used to determine ambient occlusion and culling when rebuilding chunks for render
+     * @deprecated call via {@link IBlockState#isOpaqueCube()} whenever possible. Implementing/overriding is fine.
      */
     @Override
-    public void breakBlock(World worldIn, BlockPos pos, IBlockState state)
+    public boolean isOpaqueCube(IBlockState state)
     {
-        TileEntity tileentity = worldIn.getTileEntity(pos);
-
-        if (tileentity instanceof IInventory)
-        {
-            InventoryHelper.dropInventoryItems(worldIn, pos, (IInventory)tileentity);
-            worldIn.updateComparatorOutputLevel(pos, this);
-        }
-
-        super.breakBlock(worldIn, pos, state);
+        return false;
     }
 
+    /**
+     * @deprecated call via {@link IBlockState#isFullCube()} whenever possible. Implementing/overriding is fine.
+     */
+    @Override
+    public boolean isFullCube(IBlockState state)
+    {
+        return false;
+    }
+    
+    @SideOnly(Side.CLIENT)
+    @Override
+    public BlockRenderLayer getBlockLayer()
+    {
+        return BlockRenderLayer.CUTOUT_MIPPED;
+        //return BlockRenderLayer.SOLID;
+    }
+    
     @SideOnly(Side.CLIENT)
     @Override
     public void randomDisplayTick (IBlockState state, World world, BlockPos pos, Random random)
@@ -162,54 +127,8 @@ public class BlockCompostBin extends BlockContainer
             ParticleSteam.spawnParticle(world, px, py, pz);
         }
     }
-
-    /*
-    @Override
-    @SideOnly(Side.CLIENT)
-    public IIcon getIcon (int side, int meta) {
-        switch (side) {
-            case 0:
-                return icons[ICON_BOTTOM];
-            case 1:
-                return icons[ICON_TOP];
-            default:
-                return icons[ICON_SIDE];
-        }
-    }
-
-    @SideOnly(Side.CLIENT)
-    public IIcon getInnerIcon () {
-        return icons[ICON_INNER];
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public void registerBlockIcons (IIconRegister register) {
-        icons = new IIcon[4];
-
-        icons[ICON_SIDE] = register.registerIcon(GardenCore.MOD_ID + ":compost_bin_side");
-        icons[ICON_TOP] = register.registerIcon(GardenCore.MOD_ID + ":compost_bin_top");
-        icons[ICON_BOTTOM] = register.registerIcon(GardenCore.MOD_ID + ":compost_bin_bottom");
-        icons[ICON_INNER] = register.registerIcon(GardenCore.MOD_ID + ":compost_bin_inner");
-    }
-    */
-
-    @Override
-    public TileEntity createNewTileEntity (World world, int meta)
-    {
-        return new TileEntityCompostBin();
-    }
-
-    public TileEntityCompostBin getTileEntity (IBlockAccess world, BlockPos pos)
-    {
-        TileEntity te = world.getTileEntity(pos);
-        return ((te != null) && (te instanceof TileEntityCompostBin)) ? (TileEntityCompostBin) te : null;
-    }
     
-    // ----------------------------------------------------------------------
-    // block state
-    
-    public static final PropertyDirection FACING = BlockHorizontal.FACING;
+    // --- Block state ---
     
     // from
     // http://www.minecraftforge.net/forum/topic/62067-solved-itickable-and-tes-not-ticking/
@@ -224,6 +143,7 @@ public class BlockCompostBin extends BlockContainer
     /**
      * Convert the given metadata into a BlockState for this Block
      */
+    @Override
     public IBlockState getStateFromMeta(int meta)
     {
         EnumFacing enumfacing = EnumFacing.getFront(meta);
@@ -239,6 +159,7 @@ public class BlockCompostBin extends BlockContainer
     /**
      * Convert the BlockState into the correct metadata value
      */
+    @Override
     public int getMetaFromState(IBlockState state)
     {
         return ((EnumFacing) state.getValue(FACING)).getIndex();
@@ -249,6 +170,7 @@ public class BlockCompostBin extends BlockContainer
      * 
      * @deprecated call via {@link IBlockState#withRotation(Rotation)} whenever possible. Implementing/overriding is fine.
      */
+    @Override
     public IBlockState withRotation(IBlockState state, Rotation rot)
     {
         return state.withProperty(FACING, rot.rotate((EnumFacing) state.getValue(FACING)));
@@ -259,23 +181,17 @@ public class BlockCompostBin extends BlockContainer
      * 
      * @deprecated call via {@link IBlockState#withMirror(Mirror)} whenever possible. Implementing/overriding is fine.
      */
+    @Override
     public IBlockState withMirror(IBlockState state, Mirror mirrorIn)
     {
         return state.withRotation(mirrorIn.toRotation((EnumFacing) state.getValue(FACING)));
     }
 
-    // from
-    // http://www.minecraftforge.net/forum/topic/42458-solved1102-blockstates-crashing/?do=findComment&comment=228689
-    protected BlockStateContainer createBlockState()
-    {
-        return new BlockStateContainer(this, new IProperty[] { FACING });
-    }
-
     /**
      * Called by ItemBlocks after a block is set in the world, to allow post-place logic
      */
-    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer,
-            ItemStack stack)
+    @Override
+    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack)
     {
         worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
 
@@ -320,5 +236,45 @@ public class BlockCompostBin extends BlockContainer
         {
             return true;
         }
+    }
+    
+    // ----------------------------------------------------------------------
+    // BlockContainer
+    
+    /**
+     * The type of render function called. MODEL for mixed tesr and static model, MODELBLOCK_ANIMATED for TESR-only,
+     * LIQUID for vanilla liquids, INVISIBLE to skip all rendering
+     * @deprecated call via {@link IBlockState#getRenderType()} whenever possible. Implementing/overriding is fine.
+     */
+    @Override
+    public EnumBlockRenderType getRenderType(IBlockState state)
+    {
+        return EnumBlockRenderType.MODEL;
+    }
+
+    /**
+     * Called serverside after this block is replaced with another in Chunk, but before the Tile Entity is updated
+     */
+    @Override
+    public void breakBlock(World worldIn, BlockPos pos, IBlockState state)
+    {
+        TileEntity tileentity = worldIn.getTileEntity(pos);
+
+        if (tileentity instanceof IInventory)
+        {
+            InventoryHelper.dropInventoryItems(worldIn, pos, (IInventory)tileentity);
+            worldIn.updateComparatorOutputLevel(pos, this);
+        }
+
+        super.breakBlock(worldIn, pos, state);
+    }
+
+    // ----------------------------------------------------------------------
+    // ITileEntityProvider
+
+    @Override
+    public TileEntity createNewTileEntity (World world, int meta)
+    {
+        return new TileEntityCompostBin();
     }
 }

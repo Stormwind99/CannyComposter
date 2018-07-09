@@ -8,5 +8,4 @@ public class SUtil
 	{
 		return ((stack == null) || (stack.isEmpty()));
 	}
-	
 }
