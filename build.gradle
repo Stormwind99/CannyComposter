@@ -47,6 +47,8 @@ loadConfig()
 
 /// Build
 
+defaultTasks 'build'
+
 minecraft {
     version = "${config.mc_version}-${config.forge_version}"
     runDir = "run"
