@@ -15,11 +15,33 @@ public class GuiCompostBin extends GuiContainer
 
     private Slot hoveredSlot;
 
-    public GuiCompostBin (InventoryPlayer inventory, TileEntityCompostBin tileEntity) {
+    public GuiCompostBin (InventoryPlayer inventory, TileEntityCompostBin tileEntity)
+    {
         super(new ContainerCompostBin(inventory, tileEntity));
         tileCompost = tileEntity;
     }
 
+    @Override
+    public void drawScreen (int mouseX, int mouseY, float partialTicks) 
+    {
+    	super.drawScreen(mouseX, mouseY, partialTicks);
+    	this.renderHoveredToolTip(mouseX, mouseY);
+    }
+    
+    @Override
+    protected void drawGuiContainerForegroundLayer(int p_146979_1_, int p_146979_2_)
+    {
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+
+        String name = this.tileCompost.hasCustomName() ? this.tileCompost.getName() : I18n.format(this.tileCompost.getName(), new Object[0]);
+        this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2, 6, 4210752);
+        this.fontRenderer.drawString(I18n.format("container.inventory", new Object[0]), 8, this.ySize - 96 + 2, 4210752);
+
+        GL11.glPopAttrib();
+    }
+
+
+    /*
     @Override
     public void drawScreen (int mouseX, int mouseY, float dt) {
         hoveredSlot = null;
@@ -28,10 +50,13 @@ public class GuiCompostBin extends GuiContainer
             if (isPointInRegion(slot.xPos, slot.yPos, 16, 16, mouseX, mouseY))
                 hoveredSlot = slot;
         }
-
+       
         super.drawScreen(mouseX, mouseY, dt);
+
+        this.renderHoveredToolTip(mouseX, mouseY);
     }
 
+    
     @Override
     protected void drawGuiContainerForegroundLayer(int p_146979_1_, int p_146979_2_) {
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
@@ -45,6 +70,7 @@ public class GuiCompostBin extends GuiContainer
 
         GL11.glPopAttrib();
     }
+    */
 
     @Override
     protected void drawGuiContainerBackgroundLayer (float p_146976_1_, int p_146976_2_, int p_146976_3_) {
@@ -60,6 +86,7 @@ public class GuiCompostBin extends GuiContainer
         }
     }
 
+    /*
     protected void drawSlotHighlight (Slot slot) {
         if (hoveredSlot == null || isInPlayerInventory(hoveredSlot) || slot == hoveredSlot)
             return;
@@ -76,5 +103,6 @@ public class GuiCompostBin extends GuiContainer
     private boolean isInPlayerInventory (Slot slot) {
         return slot.inventory == mc.player.inventory;
     }
+    */
 }
 

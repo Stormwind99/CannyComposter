@@ -21,11 +21,12 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
 	static final int OUTPUT_SLOT = TOTAL_SLOTS - 1; 
 	static final int DECOMPOST_COUNT_MAX = 8;
 	static final int DECOMPOSE_TIME_MAX = 200;
+	static final int STACK_LIMIT = 64;
 	
 	private NonNullList<ItemStack> itemStacks = NonNullList.<ItemStack>withSize(TOTAL_SLOTS, ItemStack.EMPTY);
 
     // The number of ticks remaining to decompose the current item
-    public int binDecomposeTime = DECOMPOSE_TIME_MAX;
+    public int binDecomposeTime;
 
     // The slot actively being decomposed
     private int currentItemSlot;
@@ -37,13 +38,176 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
 
     private String customName;
     
-    public int getDecompTime () {
+    // ----------------------------------------------------------------------
+    // TileEntityCompostBin
+    
+    public int getDecompTime ()
+    {
         return binDecomposeTime;
     }
 
-    public int getCurrentItemDecompTime () {
+    public int getCurrentItemDecompTime()
+    {
         return currentItemDecomposeTime;
     }
+
+    public boolean isDecomposing()
+    {
+        return binDecomposeTime > 0;
+    }
+
+    @SideOnly(Side.CLIENT)
+    public int getDecomposeTimeRemainingScaled(int scale)
+    {
+        if (currentItemDecomposeTime == 0)
+            currentItemDecomposeTime = DECOMPOSE_TIME_MAX;
+
+        return (DECOMPOST_COUNT_MAX - itemDecomposeCount) * scale / COMPOSTING_SLOTS + (binDecomposeTime * scale / (currentItemDecomposeTime * COMPOSTING_SLOTS));
+
+        //return binDecomposeTime * scale / currentItemDecomposeTime;
+    }
+
+
+    private boolean canCompost()
+    {
+        if (currentItemSlot == -1)
+            return false;
+        
+        if (SUtil.isEmpty(itemStacks.get(currentItemSlot)))
+        	return false;
+
+        if (!hasOutputItems())
+            return true;
+
+        int result = itemStacks.get(OUTPUT_SLOT).getCount() + 1;
+        
+        return (result <= getInventoryStackLimit()) && (result <= itemStacks.get(OUTPUT_SLOT).getMaxStackSize());
+    }
+
+    public void compostItem()
+    {
+        if (canCompost())
+        {
+            if (itemDecomposeCount < DECOMPOST_COUNT_MAX)
+            {
+                itemDecomposeCount++;
+            }
+
+            if (itemDecomposeCount >= DECOMPOST_COUNT_MAX)
+            {
+                ItemStack resultStack = new ItemStack(ObjectHolder.compost);
+
+                if (!hasOutputItems())
+                {
+                    itemStacks.set(OUTPUT_SLOT, resultStack);
+                }
+                else if (itemStacks.get(OUTPUT_SLOT).getItem() == resultStack.getItem())
+                {
+                    itemStacks.get(OUTPUT_SLOT).grow(1);
+                }
+
+                itemDecomposeCount = 0;
+            }
+
+            itemStacks.get(currentItemSlot).shrink(1);
+            if (itemStacks.get(currentItemSlot).getCount() == 0)
+            {
+                itemStacks.set(currentItemSlot, ItemStack.EMPTY);
+            }
+
+            currentItemSlot = -1;
+        }
+    }
+    
+    protected int getFilledSlots()
+    {
+        int filledSlotCount = 0;
+        for (int i = 0; i < COMPOSTING_SLOTS; i++)
+        {
+            filledSlotCount += (!SUtil.isEmpty(itemStacks.get(i))) ? 1 : 0;
+        }
+
+        return filledSlotCount;
+    }
+
+    public boolean hasInputItems()
+    {
+        return getFilledSlots() > 0;
+    }
+
+    public boolean hasOutputItems()
+    {
+        return !SUtil.isEmpty(itemStacks.get(OUTPUT_SLOT));
+    }
+
+    private int selectRandomFilledSlot()
+    {
+        int filledSlotCount = getFilledSlots();
+     
+        if (filledSlotCount == 0)
+        {
+            return -1;
+        }
+
+        int index = this.getWorld().rand.nextInt(filledSlotCount);
+        for (int i = 0, c = 0; i < COMPOSTING_SLOTS; i++)
+        {
+            if (!SUtil.isEmpty(itemStacks.get(i)))
+            {
+                if (c++ == index)
+                {
+                    return i;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    public static int getItemDecomposeTime(ItemStack itemStack)
+    {
+        if (SUtil.isEmpty(itemStack))
+        {
+            return 0;
+        }
+
+        /*
+        // TODO make non-food compost, and different compost rates
+        ICompostMaterial material = GardenAPI.instance().registries().compost().getCompostMaterialInfo(itemStack);
+        if (material == null)
+            return 0;
+
+        return material.getDecomposeTime();
+        */
+        
+        return (itemStack.getItem() instanceof ItemFood) ? 125 : 0;
+    }
+
+    public static boolean isItemDecomposable(ItemStack itemStack)
+    {
+        return getItemDecomposeTime(itemStack) > 0;
+    }
+
+    public void setName(String name)
+    {
+        this.customName = name;
+    }
+
+    public boolean isEmpty()
+    {
+        for (ItemStack itemstack : this.itemStacks)
+        {
+            if (!SUtil.isEmpty(itemstack))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    
+    // ----------------------------------------------------------------------
+    // TileEntity
 
     @Override
     public void readFromNBT(NBTTagCompound compound)
@@ -72,7 +236,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     }
 
     @Override
-    public NBTTagCompound writeToNBT (NBTTagCompound compound)
+    public NBTTagCompound writeToNBT(NBTTagCompound compound)
     {
         super.writeToNBT(compound);
 
@@ -89,39 +253,29 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         
         return compound;
     }
+    
+    // ----------------------------------------------------------------------
+    // IWorldNameable
 
-    /*
-    @Override
-    public Packet getDescriptionPacket () {
-        NBTTagCompound tag = new NBTTagCompound();
-        writeToNBT(tag);
-
-        return new S35PacketUpdateTileEntity(xCoord, yCoord, zCoord, 5, tag);
-    }
-
-    @Override
-    public void onDataPacket (NetworkManager net, S35PacketUpdateTileEntity pkt) {
-        readFromNBT(pkt.func_148857_g());
-        getthis.getWorld()().func_147479_m(xCoord, yCoord, zCoord); // markBlockForRenderUpdate
-    }
-    */
-
-    public boolean isDecomposing ()
+    /**
+     * Get the name of this object. For players this returns their username
+     */
+    public String getName()
     {
-        return binDecomposeTime > 0;
+        return this.hasCustomName() ? this.customName : "composter.compost_bin";
     }
 
-    @SideOnly(Side.CLIENT)
-    public int getDecomposeTimeRemainingScaled (int scale)
+    /**
+     * Returns true if this thing is named
+     */
+    public boolean hasCustomName()
     {
-        if (currentItemDecomposeTime == 0)
-            currentItemDecomposeTime = DECOMPOSE_TIME_MAX;
-
-        return (DECOMPOST_COUNT_MAX - itemDecomposeCount) * scale / COMPOSTING_SLOTS + (binDecomposeTime * scale / (currentItemDecomposeTime * COMPOSTING_SLOTS));
-
-        //return binDecomposeTime * scale / currentItemDecomposeTime;
+        return this.customName != null && !this.customName.isEmpty();
     }
-
+    
+    // ----------------------------------------------------------------------
+    // ITickable
+    
     public void update()
     {
         boolean isDecomposing = binDecomposeTime > 0;
@@ -162,174 +316,31 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
                 }
             }
 
-            if (isDecomposing != binDecomposeTime > 0 || decompCount != itemDecomposeCount) {
+            if (isDecomposing != binDecomposeTime > 0 || decompCount != itemDecomposeCount)
+            {
                 shouldUpdate = true;
                 BlockCompostBin.updateBlockState(this.getWorld(), this.getPos());
             }
         }
 
         if (shouldUpdate)
-            markDirty();
-    }
-
-    private boolean canCompost () {
-        if (currentItemSlot == -1)
-            return false;
-        if (SUtil.isEmpty(itemStacks.get(currentItemSlot)))
-        	return false;
-
-        if (!hasOutputItems())
-            return true;
-
-        int result = itemStacks.get(OUTPUT_SLOT).getCount() + 1;
-        return result <= getInventoryStackLimit() && result <= itemStacks.get(OUTPUT_SLOT).getMaxStackSize();
-    }
-
-    public void compostItem ()
-    {
-        if (canCompost())
         {
-            if (itemDecomposeCount < DECOMPOST_COUNT_MAX)
-            {
-                itemDecomposeCount++;
-            }
-
-            if (itemDecomposeCount == DECOMPOST_COUNT_MAX)
-            {
-                ItemStack resultStack = new ItemStack(ObjectHolder.compost);
-
-                if (!hasOutputItems())
-                {
-                    itemStacks.set(OUTPUT_SLOT, resultStack);
-                }
-                else if (itemStacks.get(OUTPUT_SLOT).getItem() == resultStack.getItem())
-                {
-                    itemStacks.get(OUTPUT_SLOT).grow(1);
-                }
-
-                itemDecomposeCount = 0;
-            }
-
-            itemStacks.get(currentItemSlot).shrink(1);
-            if (itemStacks.get(currentItemSlot).getCount() == 0)
-            {
-                itemStacks.set(currentItemSlot, ItemStack.EMPTY);
-            }
-
-            currentItemSlot = -1;
+            markDirty();
         }
     }
     
-    protected int getFilledSlots()
-    {
-        int filledSlotCount = 0;
-        for (int i = 0; i < COMPOSTING_SLOTS; i++)
-        {
-            filledSlotCount += (!SUtil.isEmpty(itemStacks.get(i))) ? 1 : 0;
-        }
-
-        return filledSlotCount;
-    }
-
-    public boolean hasInputItems ()
-    {
-        return getFilledSlots() > 0;
-    }
-
-    public boolean hasOutputItems ()
-    {
-        return !SUtil.isEmpty(itemStacks.get(OUTPUT_SLOT));
-    }
-
-    private int selectRandomFilledSlot ()
-    {
-        int filledSlotCount = getFilledSlots();
-     
-        if (filledSlotCount == 0)
-            return -1;
-
-        int index = this.getWorld().rand.nextInt(filledSlotCount);
-        for (int i = 0, c = 0; i < COMPOSTING_SLOTS; i++) {
-            if (!SUtil.isEmpty(itemStacks.get(i))) {
-                if (c++ == index)
-                    return i;
-            }
-        }
-
-        return -1;
-    }
-
-    public static int getItemDecomposeTime (ItemStack itemStack) {
-        if (SUtil.isEmpty(itemStack))
-        {
-            return 0;
-        }
-
-        /*
-        // TODO
-        ICompostMaterial material = GardenAPI.instance().registries().compost().getCompostMaterialInfo(itemStack);
-        if (material == null)
-            return 0;
-
-        return material.getDecomposeTime();
-        */
-        
-        return (itemStack.getItem() instanceof ItemFood) ? 125 : 0;
-    }
-
-    public static boolean isItemDecomposable (ItemStack itemStack) {
-        return getItemDecomposeTime(itemStack) > 0;
-    }
- 
-    /*
-    @Override
-    public ItemStack getStackInSlotOnClosing (int slot) {
-        return null;
-    }
-    */
-
-    /**
-     * Get the name of this object. For players this returns their username
-     */
-    public String getName()
-    {
-        return this.hasCustomName() ? this.customName : "composter.compost_bin";
-    }
-
-    /**
-     * Returns true if this thing is named
-     */
-    public boolean hasCustomName()
-    {
-        return this.customName != null && !this.customName.isEmpty();
-    }
-
-    public void setName(String name)
-    {
-        this.customName = name;
-    }
-
+    // ----------------------------------------------------------------------
+    // IInventory
+    
     /**
      * Returns the number of slots in the inventory.
      */
+    @Override
     public int getSizeInventory()
     {
         return this.itemStacks.size();
     }
-
-    public boolean isEmpty()
-    {
-        for (ItemStack itemstack : this.itemStacks)
-        {
-            if (!SUtil.isEmpty(itemstack))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
+    
     @Override
     public boolean isItemValidForSlot (int slot, ItemStack item)
     {
@@ -340,41 +351,11 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
 
         return false;
     }
-
-    /*
-    private int[] accessSlots = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, COMPOSTING_SLOTS };
-
-    @Override
-    public int[] getAccessibleSlotsFromSide (int side) {
-        return accessSlots;
-    }
-    
-    @Override
-    public boolean isItemValidForSlot(int slot, ItemStack item) {
-        if (slot == OUTPUT_SLOT)
-            return false;
-
-        return isItemValidForSlot(slot, item);
-    }
-
-    @Override
-    public boolean canExtractItem (int slot, ItemStack item, int side) {
-        if (slot != OUTPUT_SLOT)
-            return false;
-
-        if (item == null)
-            return false;
-
-        return item.getItem() == ModItems.compostPile;
-    }
-     */
-    
-    // ----------------------------------------------------------------------
-    // IInventory
     
     /**
      * Returns the stack in the given slot.
      */
+    @Override
     public ItemStack getStackInSlot(int index)
     {
         return index >= 0 && index < this.itemStacks.size() ? (ItemStack)this.itemStacks.get(index) : ItemStack.EMPTY;
@@ -383,6 +364,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     /**
      * Removes up to a specified number of items from an inventory slot and returns them in a new stack.
      */
+    @Override
     public ItemStack decrStackSize(int index, int count)
     {
     	ItemStack stack = ItemStackHelper.getAndSplit(this.itemStacks, index, count);
@@ -398,6 +380,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     /**
      * Removes a stack from the given slot and returns it.
      */
+    @Override
     public ItemStack removeStackFromSlot(int index)
     {
         return ItemStackHelper.getAndRemove(this.itemStacks, index);
@@ -406,8 +389,14 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     /**
      * Sets the given item stack to the specified slot in the inventory (can be crafting or armor sections).
      */
+    @Override
     public void setInventorySlotContents(int index, ItemStack stack)
     {
+    	if (stack == null)
+    	{
+    		stack = ItemStack.EMPTY;
+    	}
+    	
         if (index >= 0 && index < this.itemStacks.size())
         {
             this.itemStacks.set(index, stack);
@@ -417,14 +406,16 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     /**
      * Returns the maximum stack size for a inventory slot. Seems to always be 64, possibly will be extended.
      */
+    @Override
     public int getInventoryStackLimit()
     {
-        return 64;
+        return STACK_LIMIT;
     }
 
     /**
      * Don't rename this method to canInteractWith due to conflicts with Container
      */
+    @Override
     public boolean isUsableByPlayer(EntityPlayer player)
     {
         if (this.world.getTileEntity(this.pos) != this)
@@ -437,30 +428,62 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         }
     }
 
+    @Override
     public void openInventory(EntityPlayer player)
     {
     }
 
+    @Override
     public void closeInventory(EntityPlayer player)
     {
     }
 
+    @Override
     public int getField(int id)
     {
         return 0;
     }
 
+    @Override
     public void setField(int id, int value)
     {
     }
 
+    @Override
     public int getFieldCount()
     {
         return 0;
     }
 
+    @Override
     public void clear()
     {
         this.itemStacks.clear();
+    }
+    
+    // ----------------------------------------------------------------------
+    // IItemHandler
+  
+    private net.minecraftforge.items.IItemHandler itemHandler;
+    
+    protected net.minecraftforge.items.IItemHandler createUnSidedHandler()
+    {
+        return new net.minecraftforge.items.wrapper.InvWrapper(this);
+    }
+  
+    @SuppressWarnings("unchecked")
+    @Override
+    @javax.annotation.Nullable
+    public <T> T getCapability(net.minecraftforge.common.capabilities.Capability<T> capability, @javax.annotation.Nullable net.minecraft.util.EnumFacing facing)
+    {
+        if (capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
+            return (T) (itemHandler == null ? (itemHandler = createUnSidedHandler()) : itemHandler);
+        return super.getCapability(capability, facing);
+    }
+
+    @Override
+    public boolean hasCapability(net.minecraftforge.common.capabilities.Capability<?> capability, @javax.annotation.Nullable net.minecraft.util.EnumFacing facing)
+    {
+        return capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
     }
 }

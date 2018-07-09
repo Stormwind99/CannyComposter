@@ -77,6 +77,14 @@ public class RegistrationHelpers
         ModelResourceLocation loc = new ModelResourceLocation(item.getRegistryName(), "inventory");
         ModelLoader.setCustomModelResourceLocation(item, 0, loc);
     }
+    
+    @SideOnly(Side.CLIENT)
+    public static void registerRender(Block block)
+    {
+    	Item item = Item.getItemFromBlock(block);
+        ModelResourceLocation loc = new ModelResourceLocation(item.getRegistryName(), "inventory");
+        ModelLoader.setCustomModelResourceLocation(item, 0, loc);
+    }
 
     public static ItemBlock registerItemBlock(IForgeRegistry<Item> registry, Block block)
     {

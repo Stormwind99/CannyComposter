@@ -8,7 +8,8 @@ import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
@@ -33,7 +34,12 @@ public class BlockCompostBin extends BlockContainer
 
     public BlockCompostBin ()
     {
-        super(Material.WOOD);
+        this(Material.WOOD);
+    }
+    
+    public BlockCompostBin (Material materialIn)
+    {
+        super(materialIn);
         setTickRandomly(true);
         setHardness(1.5f);
         setResistance(5f);
@@ -58,8 +64,15 @@ public class BlockCompostBin extends BlockContainer
      * Used to determine ambient occlusion and culling when rebuilding chunks for render
      * @deprecated call via {@link IBlockState#isOpaqueCube()} whenever possible. Implementing/overriding is fine.
      */
-    @Override
     public boolean isOpaqueCube(IBlockState state)
+    {
+        return false;
+    }
+
+    /**
+     * @deprecated call via {@link IBlockState#isFullCube()} whenever possible. Implementing/overriding is fine.
+     */
+    public boolean isFullCube(IBlockState state)
     {
         return false;
     }
@@ -77,28 +90,31 @@ public class BlockCompostBin extends BlockContainer
         return true;
     }
 
-    public static void updateBlockState (World world, BlockPos pos) {
+    public static void updateBlockState (World world, BlockPos pos) 
+    {
         TileEntityCompostBin te = (TileEntityCompostBin) world.getTileEntity(pos);
         if (te == null)
+        {
             return;
+        }
 
         te.markDirty();
     }
 
-    @Override
-    public void breakBlock (World world, BlockPos pos, IBlockState state)
+    /**
+     * Called serverside after this block is replaced with another in Chunk, but before the Tile Entity is updated
+     */
+    public void breakBlock(World worldIn, BlockPos pos, IBlockState state)
     {
-        TileEntityCompostBin te = getTileEntity(world, pos);
+        TileEntity tileentity = worldIn.getTileEntity(pos);
 
-        if (te != null) {
-            for (int i = 0; i < te.getSizeInventory(); i++) {
-                ItemStack item = te.getStackInSlot(i);
-                if (item != null)
-                    dropBlockAsItem(world, pos, state, 0);
-            }
+        if (tileentity instanceof IInventory)
+        {
+            InventoryHelper.dropInventoryItems(worldIn, pos, (IInventory)tileentity);
+            worldIn.updateComparatorOutputLevel(pos, this);
         }
 
-        super.breakBlock(world, pos, state);
+        super.breakBlock(worldIn, pos, state);
     }
 
     @SideOnly(Side.CLIENT)
@@ -107,14 +123,16 @@ public class BlockCompostBin extends BlockContainer
     {
         TileEntityCompostBin te = (TileEntityCompostBin) world.getTileEntity(pos);
         if (te == null)
+        {
             return;
+        }
 
-        if (te.isDecomposing()) {
+        if (te.isDecomposing())
+        {
             float px = pos.getX() + .5f + random.nextFloat() * .6f - .3f;
             float py = pos.getY() + .5f + random.nextFloat() * 6f / 16f;
             float pz = pos.getZ() + .5f + random.nextFloat() * .6f - .3f;
 
-            //world.spawnParticle("smoke", px, py, pz, 0, 0, 0);
             ParticleSteam.spawnParticle(world, px, py, pz);
         }
     }
@@ -151,11 +169,13 @@ public class BlockCompostBin extends BlockContainer
     */
 
     @Override
-    public TileEntity createNewTileEntity (World world, int meta) {
+    public TileEntity createNewTileEntity (World world, int meta)
+    {
         return new TileEntityCompostBin();
     }
 
-    public TileEntityCompostBin getTileEntity (IBlockAccess world, BlockPos pos) {
+    public TileEntityCompostBin getTileEntity (IBlockAccess world, BlockPos pos)
+    {
         TileEntity te = world.getTileEntity(pos);
         return (te != null && te instanceof TileEntityCompostBin) ? (TileEntityCompostBin) te : null;
     }

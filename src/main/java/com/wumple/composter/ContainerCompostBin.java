@@ -103,7 +103,7 @@ public class ContainerCompostBin extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int slotIndex) {
-		ItemStack itemStack = null;
+		ItemStack itemStack = ItemStack.EMPTY;
 		Slot slot = (Slot) inventorySlots.get(slotIndex);
 
 		int compostStart = compostSlots.get(0).slotNumber;
@@ -119,9 +119,13 @@ public class ContainerCompostBin extends Container {
 			itemStack = slotStack.copy();
 
 			// Try merge output into inventory and signal change
-			if (slotIndex == outputSlot.slotNumber) {
+			if (slotIndex == outputSlot.slotNumber)
+			{
 				if (!mergeItemStack(slotStack, inventoryStart, hotbarEnd, true))
-					return null;
+				{
+					//return null;
+					return ItemStack.EMPTY;
+				}
 
 				slot.onSlotChange(slotStack, itemStack);
 				BlockCompostBin.updateBlockState(tileCompost.getWorld(), tileCompost.getPos());
@@ -133,24 +137,41 @@ public class ContainerCompostBin extends Container {
 						|| !mergeItemStack(slotStack, compostStart, compostEnd, false)) {
 					if (slotIndex >= inventoryStart && slotIndex < hotbarStart) {
 						if (!mergeItemStack(slotStack, hotbarStart, hotbarEnd, false))
-							return null;
+						{
+							//return null;
+							return ItemStack.EMPTY;
+						}
 					} else if (slotIndex >= hotbarStart && slotIndex < hotbarEnd
 							&& !this.mergeItemStack(slotStack, inventoryStart, hotbarStart, false))
-						return null;
+					{
+						//return null;
+						return ItemStack.EMPTY;
+					}
 				}
 			}
 
 			// Try merge stack into inventory
 			else if (!mergeItemStack(slotStack, inventoryStart, hotbarEnd, false))
-				return null;
+			{
+				//return null;
+				return ItemStack.EMPTY;
+			}
 
 			if (slotStack.isEmpty())
-				slot.putStack(null);
+			{
+				slot.putStack(ItemStack.EMPTY);
+				//slot.putStack(null);
+			}
 			else
+			{
 				slot.onSlotChanged();
+			}
 
 			if (slotStack.getCount() == itemStack.getCount())
-				return null;
+			{
+				//return null;
+				return ItemStack.EMPTY;
+			}
 
 			slot.onTake(player, slotStack);
 		}
