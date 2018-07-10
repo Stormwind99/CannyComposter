@@ -34,7 +34,8 @@ public class BlockCompostBin extends BlockContainer
     // ----------------------------------------------------------------------
     // BlockCompostBin
 	
-	public static final PropertyInteger LEVEL = PropertyInteger.create("level", 0, 3);
+	public static final int NUM_LEVELS = 3;
+	public static final PropertyInteger LEVEL = PropertyInteger.create("level", 0, NUM_LEVELS);
 	
     public BlockCompostBin ()
     {
@@ -80,9 +81,21 @@ public class BlockCompostBin extends BlockContainer
     }
     */
     
-    public void setContentsLevel(World worldIn, BlockPos pos, IBlockState state, int level)
+    public void setContentsLevel(World worldIn, BlockPos pos, IBlockState state, float amount)
     {
-        worldIn.setBlockState(pos, state.withProperty(LEVEL, Integer.valueOf(MathHelper.clamp(level, 0, 3))), 2);
+    	float floatLevel = amount * (float)NUM_LEVELS;
+    	int level = Math.round(floatLevel);
+    	
+    	// make sure at least level 1 if anything is in the block
+    	if (floatLevel > 0.0F)
+    	{
+    		level = Math.max(1, level);
+    	}
+    	
+    	// safety - clamp within range
+    	int chunkedLevel = MathHelper.clamp(level, 0, NUM_LEVELS);
+    	
+        worldIn.setBlockState(pos, state.withProperty(LEVEL, chunkedLevel), 2);
         worldIn.updateComparatorOutputLevel(pos, this);
     }
     

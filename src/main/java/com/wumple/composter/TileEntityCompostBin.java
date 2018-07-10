@@ -241,11 +241,12 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
 	    	if (block instanceof BlockCompostBin)
 	    	{
 	    		BlockCompostBin bin = (BlockCompostBin)block;
-	    		int slots = getFilledSlots();
-	        	int level = ((slots > 0) && (slots < 4)) ? 1 : slots * 4 / COMPOSTING_SLOTS;
-	    		bin.setContentsLevel(world, pos, state, level);
+	    		int slots = getFilledSlots() + (hasOutputItems() ? 1 : 0);
+	        	float amount = (float)slots / (float)TOTAL_SLOTS;
+	    		bin.setContentsLevel(world, pos, state, amount);
 	    	}
     	}
+    	
         markDirty();
     }
 
