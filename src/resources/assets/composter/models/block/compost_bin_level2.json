@@ -1,4 +1,5 @@
 {
+    "parent": "composter:block/compost_bin",
     "ambientocclusion": false,
     "textures": {
         "particle": "composter:blocks/compost_bin_side",
