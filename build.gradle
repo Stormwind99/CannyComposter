@@ -137,13 +137,13 @@ jar {
 curseforge {
     group 'upload'
     description 'Upload release to Curseforge'
-    apiKey = priv.curseforge_key
+    apiKey = priv.curseforge_apikey
     project {
         id = config.curseforge_id
         changelog = { ->
             return getChangeInfo()
         }
-        releaseType = "release"
+        releaseType = config.curseforge_releasetype
     }
 }
  
