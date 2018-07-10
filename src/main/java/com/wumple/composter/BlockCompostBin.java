@@ -1,7 +1,5 @@
 package com.wumple.composter;
 
-import java.util.Random;
-
 import com.wumple.util.RegistrationHelpers;
 
 import net.minecraft.block.BlockContainer;
@@ -127,26 +125,6 @@ public class BlockCompostBin extends BlockContainer
     {
         return BlockRenderLayer.CUTOUT_MIPPED;
         //return BlockRenderLayer.SOLID;
-    }
-    
-    @SideOnly(Side.CLIENT)
-    @Override
-    public void randomDisplayTick (IBlockState state, World world, BlockPos pos, Random random)
-    {
-        TileEntityCompostBin te = (TileEntityCompostBin) world.getTileEntity(pos);
-        if (te == null)
-        {
-            return;
-        }
-
-        if (te.isDecomposing())
-        {
-            float px = pos.getX() + .5f + random.nextFloat() * .6f - .3f;
-            float py = pos.getY() + .5f + random.nextFloat() * 6f / 16f;
-            float pz = pos.getZ() + .5f + random.nextFloat() * .6f - .3f;
-
-            ParticleSteam.spawnParticle(world, px, py, pz);
-        }
     }
     
     /**

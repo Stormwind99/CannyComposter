@@ -11,10 +11,12 @@ import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -29,6 +31,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
 	static final int NO_SLOT = -1;
 	static final int NO_DECOMPOSE_TIME = -1;
 	static final double USE_RANGE = 64.0D;
+	static final int PARTICLE_INTERVAL = 64;
 	
 	private NonNullList<ItemStack> itemStacks = NonNullList.<ItemStack>withSize(TOTAL_SLOTS, ItemStack.EMPTY);
 
@@ -228,6 +231,12 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     	return "container.composter.compost_bin";
     }
     
+    public float getFilledRatio()
+    {
+		int slots = getFilledSlots() + (hasOutputItems() ? 1 : 0);
+    	return (float)slots / (float) TOTAL_SLOTS;
+    }
+    
     protected void updateBlockState()
     {
     	World world = this.getWorld();
@@ -241,9 +250,8 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
 	    	if (block instanceof BlockCompostBin)
 	    	{
 	    		BlockCompostBin bin = (BlockCompostBin)block;
-	    		int slots = getFilledSlots() + (hasOutputItems() ? 1 : 0);
-	        	float amount = (float)slots / (float)TOTAL_SLOTS;
-	    		bin.setContentsLevel(world, pos, state, amount);
+	    		float ratio = getFilledRatio();
+	    		bin.setContentsLevel(world, pos, state, ratio);
 	    	}
     	}
     	
@@ -263,6 +271,23 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
             currentItemDecomposeTime = 0;
             updateBlockState();
         }
+    }
+    
+    protected void checkParticles()
+    {
+    	// show some steam particles when composting
+    	if (isDecomposing() && (binDecomposeTime % PARTICLE_INTERVAL == 0))
+    	{
+    		float ratio = getFilledRatio();
+    		double x = (double)pos.getX() + 0.5D;
+    		// try to align y source of particles to soil level in bin
+    		double y = (double)pos.getY() + 0.5D + (0.5D * ratio);
+    		double z = (double)pos.getZ() + 0.5D;
+    		// more particles the more full the bin is
+    		int num = 1 + Math.round(ratio); 
+    		// pre-existing particle fx candidates: cloud, spit, poof (explode), townaura, snowballpoof, smoke, large_smoke, firework, falling_dust
+        	((WorldServer)this.getWorld()).spawnParticle(EnumParticleTypes.EXPLOSION_NORMAL, x, y, z, num, 0.2D, 0.0D, 0.2D, 0.0D);
+    	}
     }
     
     // ----------------------------------------------------------------------
@@ -358,20 +383,22 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     public void update()
     {
         boolean isDecomposing = isDecomposing();
-        int decompCount = itemDecomposeCount;
 
         boolean shouldUpdate = false;
 
-        if (isDecomposing())
+        if (isDecomposing)
         {
-            --binDecomposeTime;
+            --binDecomposeTime;            
         }
 
         if (!this.getWorld().isRemote)
-        {
+        {             
+        	checkParticles();
+
+            int decompCount = itemDecomposeCount;
             int filledSlotCount = getFilledSlots();
 
-            if ( isDecomposing() || (filledSlotCount > 0) )
+            if ( isDecomposing || (filledSlotCount > 0) )
             {
                 if (binDecomposeTime <= 0)
                 {
@@ -410,16 +437,15 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
                 }
             }
 
-            if (isDecomposing != binDecomposeTime > 0 || (decompCount != itemDecomposeCount) )
+            if (isDecomposing != isDecomposing() || (decompCount != itemDecomposeCount) )
             {
                 shouldUpdate = true;
-                updateBlockState();
             }
         }
 
         if (shouldUpdate)
         {
-            markDirty();
+        	updateBlockState();
         }
     }
     
