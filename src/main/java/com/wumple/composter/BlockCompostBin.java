@@ -5,10 +5,10 @@ import java.util.Random;
 import com.wumple.util.RegistrationHelpers;
 
 import net.minecraft.block.BlockContainer;
-import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyDirection;
+import net.minecraft.block.properties.PropertyInteger;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
@@ -22,9 +22,8 @@ import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -35,8 +34,8 @@ public class BlockCompostBin extends BlockContainer
     // ----------------------------------------------------------------------
     // BlockCompostBin
 	
-    public static final PropertyDirection FACING = BlockHorizontal.FACING;
-
+	public static final PropertyInteger LEVEL = PropertyInteger.create("level", 0, 3);
+	
     public BlockCompostBin ()
     {
         this(Material.WOOD);
@@ -49,7 +48,7 @@ public class BlockCompostBin extends BlockContainer
         setHardness(1.5f);
         setResistance(5f);
         setCreativeTab(CreativeTabs.MISC);
-        setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
+        this.setDefaultState(this.blockState.getBaseState().withProperty(LEVEL, Integer.valueOf(0)));
         
         RegistrationHelpers.nameHelper(this, "composter:compost_bin");
     }
@@ -57,12 +56,13 @@ public class BlockCompostBin extends BlockContainer
     public static void updateBlockState (World world, BlockPos pos) 
     {
         TileEntityCompostBin te = (TileEntityCompostBin) world.getTileEntity(pos);
+
         if (te == null)
         {
             return;
         }
 
-        te.markDirty();
+        te.updateBlockState();
     }
     
     public TileEntityCompostBin getTileEntity (IBlockAccess world, BlockPos pos)
@@ -71,11 +71,19 @@ public class BlockCompostBin extends BlockContainer
         return ((te != null) && (te instanceof TileEntityCompostBin)) ? (TileEntityCompostBin) te : null;
     }
     
+    /*
     // from
     // http://www.minecraftforge.net/forum/topic/42458-solved1102-blockstates-crashing/?do=findComment&comment=228689
     protected BlockStateContainer createBlockState()
     {
         return new BlockStateContainer(this, new IProperty[] { FACING });
+    }
+    */
+    
+    public void setContentsLevel(World worldIn, BlockPos pos, IBlockState state, int level)
+    {
+        worldIn.setBlockState(pos, state.withProperty(LEVEL, Integer.valueOf(MathHelper.clamp(level, 0, 3))), 2);
+        worldIn.updateComparatorOutputLevel(pos, this);
     }
     
     // ----------------------------------------------------------------------
@@ -128,6 +136,29 @@ public class BlockCompostBin extends BlockContainer
         }
     }
     
+    /**
+     * Get the geometry of the queried face at the given position and state. This is used to decide whether things like
+     * buttons are allowed to be placed on the face, or how glass panes connect to the face, among other things.
+     * <p>
+     * Common values are {@code SOLID}, which is the default, and {@code UNDEFINED}, which represents something that
+     * does not fit the other descriptions and will generally cause other things not to connect to the face.
+     * 
+     * @return an approximation of the form of the given face
+     * @deprecated call via {@link IBlockState#getBlockFaceShape(IBlockAccess,BlockPos,EnumFacing)} whenever possible.
+     * Implementing/overriding is fine.
+     */
+    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face)
+    {
+        if (face == EnumFacing.UP)
+        {
+            return BlockFaceShape.BOWL;
+        }
+        else
+        {
+            return face == EnumFacing.DOWN ? BlockFaceShape.UNDEFINED : BlockFaceShape.SOLID;
+        }
+    }
+    
     // --- Block state ---
     
     // from
@@ -138,53 +169,43 @@ public class BlockCompostBin extends BlockContainer
         return true;
     }
 
-    // from
-    // https://stackoverflow.com/questions/34677155/minecraft-doesnt-find-blockstates-state
+    /**
+     * @deprecated call via {@link IBlockState#hasComparatorInputOverride()} whenever possible. Implementing/overriding
+     * is fine.
+     */
+    public boolean hasComparatorInputOverride(IBlockState state)
+    {
+        return true;
+    }
+
+    /**
+     * @deprecated call via {@link IBlockState#getComparatorInputOverride(World,BlockPos)} whenever possible.
+     * Implementing/overriding is fine.
+     */
+    public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos)
+    {
+        return ((Integer)blockState.getValue(LEVEL)).intValue();
+    }
+
     /**
      * Convert the given metadata into a BlockState for this Block
      */
-    @Override
     public IBlockState getStateFromMeta(int meta)
     {
-        EnumFacing enumfacing = EnumFacing.getFront(meta);
-
-        if (enumfacing.getAxis() == EnumFacing.Axis.Y)
-        {
-            enumfacing = EnumFacing.NORTH;
-        }
-
-        return this.getDefaultState().withProperty(FACING, enumfacing);
+        return this.getDefaultState().withProperty(LEVEL, Integer.valueOf(meta));
     }
 
     /**
      * Convert the BlockState into the correct metadata value
      */
-    @Override
     public int getMetaFromState(IBlockState state)
     {
-        return ((EnumFacing) state.getValue(FACING)).getIndex();
+        return ((Integer)state.getValue(LEVEL)).intValue();
     }
 
-    /**
-     * Returns the blockstate with the given rotation from the passed blockstate. If inapplicable, returns the passed blockstate.
-     * 
-     * @deprecated call via {@link IBlockState#withRotation(Rotation)} whenever possible. Implementing/overriding is fine.
-     */
-    @Override
-    public IBlockState withRotation(IBlockState state, Rotation rot)
+    protected BlockStateContainer createBlockState()
     {
-        return state.withProperty(FACING, rot.rotate((EnumFacing) state.getValue(FACING)));
-    }
-
-    /**
-     * Returns the blockstate with the given mirror of the passed blockstate. If inapplicable, returns the passed blockstate.
-     * 
-     * @deprecated call via {@link IBlockState#withMirror(Mirror)} whenever possible. Implementing/overriding is fine.
-     */
-    @Override
-    public IBlockState withMirror(IBlockState state, Mirror mirrorIn)
-    {
-        return state.withRotation(mirrorIn.toRotation((EnumFacing) state.getValue(FACING)));
+        return new BlockStateContainer(this, new IProperty[] {LEVEL});
     }
 
     /**
@@ -193,7 +214,8 @@ public class BlockCompostBin extends BlockContainer
     @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack)
     {
-        worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
+    	super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
+        //worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
 
         if (stack.hasDisplayName())
         {

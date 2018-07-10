@@ -1,9 +1,8 @@
 {
     "variants": {
-        "normal": { "model": "composter:compost_bin" },
-        "facing=north": { "model": "composter:compost_bin" },
-        "facing=south": { "model": "composter:compost_bin", "y": 180 },
-        "facing=west":  { "model": "composter:compost_bin", "y": 270 },
-        "facing=east":  { "model": "composter:compost_bin", "y": 90 }
+        "level=0": { "model": "composter:compost_bin_empty" },
+        "level=1": { "model": "composter:compost_bin_level1" },
+        "level=2": { "model": "composter:compost_bin_level2" },
+        "level=3": { "model": "composter:compost_bin_level3" }
     }
 }

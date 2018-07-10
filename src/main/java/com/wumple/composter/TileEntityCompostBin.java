@@ -2,6 +2,8 @@ package com.wumple.composter;
 
 import com.wumple.util.SUtil;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
@@ -11,6 +13,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -214,11 +218,6 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         return true;
     }
     
-    protected void updateBlockState()
-    {
-        BlockCompostBin.updateBlockState(this.getWorld(), this.getPos());
-    }
-    
     public void setName(String name)
     {
         this.customName = name;
@@ -229,13 +228,32 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     	return "container.composter.compost_bin";
     }
     
+    protected void updateBlockState()
+    {
+    	World world = this.getWorld();
+    	
+    	if (!world.isRemote)
+    	{
+	    	BlockPos pos = this.getPos();
+	    	
+	    	IBlockState state = world.getBlockState(pos);
+	    	Block block = state.getBlock();
+	    	if (block instanceof BlockCompostBin)
+	    	{
+	    		BlockCompostBin bin = (BlockCompostBin)block;
+	    		int slots = getFilledSlots();
+	        	int level = ((slots > 0) && (slots < 4)) ? 1 : slots * 4 / COMPOSTING_SLOTS;
+	    		bin.setContentsLevel(world, pos, state, level);
+	    	}
+    	}
+        markDirty();
+    }
 
     protected void updateInternalState(int index)
     {
         if (index == OUTPUT_SLOT)
         {
             updateBlockState();
-            markDirty();
         }  
         else if ((index == currentItemSlot) && SUtil.isEmpty(itemStacks.get(index)) )
         {
@@ -243,7 +261,6 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
             binDecomposeTime = NO_DECOMPOSE_TIME;
             currentItemDecomposeTime = 0;
             updateBlockState();
-            markDirty();
         }
     }
     
@@ -293,6 +310,16 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         }
         
         return compound;
+    }
+    
+    /**
+    * This controls whether the tile entity gets replaced whenever the block state 
+    * is changed. Normally only want this when block actually is replaced.
+    */
+    @Override
+    public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState)
+    {
+    	return (oldState.getBlock() != newState.getBlock());
     }
     
     /**
