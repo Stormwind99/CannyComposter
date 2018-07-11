@@ -257,10 +257,8 @@ task('saveBuildNumber') {
 }
 
 // trigger saving new build number when the build actually starts
-tasks.whenTaskAdded { task ->
-    if (task.name == 'build') {
-        task.dependsOn 'saveBuildNumber'
-    }
+build {
+    dependsOn 'saveBuildNumber'
 }
 
 /// Configuration
@@ -300,8 +298,3 @@ def getMergedConfig() {
     return mergedConfig
 }
 
-// --------------------------------------------------------------------------
-// Default task
-
-build {
-}
