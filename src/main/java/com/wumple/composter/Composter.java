@@ -30,5 +30,8 @@ public class Composter
 
     @EventHandler
     public void postInit(FMLPostInitializationEvent event)
-    { }
+    {
+        // add any missing default config properties
+        ConfigHandler.init();
+    }
 }

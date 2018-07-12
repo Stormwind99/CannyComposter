@@ -1,7 +1,11 @@
 package com.wumple.composter;
 
+import java.util.HashMap;
+
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Config.Name;
+import net.minecraftforge.common.config.Config.RangeDouble;
+import net.minecraftforge.common.config.Config.RangeInt;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -17,7 +21,24 @@ public class ModConfig
 	
 	@Name("Compost strength")
 	@Config.Comment("The probability that compost will succeed relative to bonemeal.")
+	@RangeDouble(min=0.0, max=1.0)
     public static double compostBonemealStrength = 0.5F;
+	
+	@Name("Compost item")
+	@Config.Comment("The item that the compost bin generates")
+	public static String compostItem = "composter:compost";
+	
+    @Name("Items")
+    @Config.Comment("Set compost amounts for items.")
+    public static Items items = new Items();
+
+    public static class Items
+    {
+        @Name("Compost amount")
+        @Config.Comment("Compost amount, -1 means item doesn't compost")
+        @RangeInt(min = -1)
+        public HashMap<String, Integer> amount = new HashMap<String, Integer>();
+    }
     
     @Name("Debugging")
     @Config.Comment("Debugging options")
