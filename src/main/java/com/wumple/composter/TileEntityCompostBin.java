@@ -33,7 +33,6 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
 	static final int NO_DECOMPOSE_TIME = -1;
 	static final double USE_RANGE = 64.0D;
 	static final int PARTICLE_INTERVAL = 64;
-	static final int DECOMPOST_COUNT_MAX = 8;
 	static final int DECOMPOSE_TIME_MAX = 200;
 	
 	private NonNullList<ItemStack> itemStacks = NonNullList.<ItemStack>withSize(TOTAL_SLOTS, ItemStack.EMPTY);
@@ -70,6 +69,11 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         return binDecomposeTime > 0;
     }
 
+    protected int getDecomposeNeeded()
+    {
+    	return ModConfig.decomposeNeeded;
+    }
+    
     @SideOnly(Side.CLIENT)
     public int getDecomposeTimeRemainingScaled(int scale)
     {
@@ -79,7 +83,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         }
 
         //return binDecomposeTime * scale / currentItemDecomposeTime;
-        return (DECOMPOST_COUNT_MAX - itemDecomposeCount) * scale / COMPOSTING_SLOTS + (binDecomposeTime * scale / (currentItemDecomposeTime * COMPOSTING_SLOTS));
+        return (getDecomposeNeeded() - itemDecomposeCount) * scale / COMPOSTING_SLOTS + (binDecomposeTime * scale / (currentItemDecomposeTime * COMPOSTING_SLOTS));
     }
 
     private boolean canCompost()
@@ -110,12 +114,14 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     {
         if (canCompost())
         {
-            if (itemDecomposeCount < DECOMPOST_COUNT_MAX)
+        	int decomposeNeeded = getDecomposeNeeded();
+        	
+            if (itemDecomposeCount < decomposeNeeded)
             {
                 itemDecomposeCount++;
             }
 
-            if (itemDecomposeCount >= DECOMPOST_COUNT_MAX)
+            if (itemDecomposeCount >= decomposeNeeded)
             {
                 
                 if (!hasOutputItems())

@@ -28,6 +28,11 @@ public class ModConfig
 	@Config.Comment("The item that the compost bin generates")
 	public static String compostItem = "composter:compost";
 	
+	@Name("Decomposed items needed")
+	@Config.Comment("The number of decomposed items needed to make one compost unit")
+	@RangeInt(min=1)
+	public static int decomposeNeeded = 8;
+	
     @Name("Items")
     @Config.Comment("Set compost amounts for items.")
     public static Items items = new Items();
