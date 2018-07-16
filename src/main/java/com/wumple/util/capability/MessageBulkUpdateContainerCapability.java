@@ -5,7 +5,6 @@ import java.util.HashMap;
 import javax.annotation.Nullable;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
@@ -97,7 +96,7 @@ public abstract class MessageBulkUpdateContainerCapability<HANDLER, DATA> implem
         final int facingIndex = buf.readByte();
         if (facingIndex >= 0)
         {
-            facing = EnumFacing.getFront(facingIndex);
+            facing = EnumFacing.byIndex(facingIndex);
         }
         else
         {
@@ -183,17 +182,9 @@ public abstract class MessageBulkUpdateContainerCapability<HANDLER, DATA> implem
             implements IMessageHandler<MESSAGE, IMessage>
     {
 
-    	private IThreadListener getThreadListener(final MessageContext ctx)
-    	{
-    		// TODO FoodFunk.proxy.getThreadListener(ctx)
-    		return Minecraft.getMinecraft();
-    	}
+    	abstract protected IThreadListener getThreadListener(final MessageContext ctx);
     	
-    	private EntityPlayer getPlayer(final MessageContext ctx)
-    	{
-    		// TODO FoodFunk.proxy.getPlayer(ctx)
-    		return Minecraft.getMinecraft().player;
-    	}
+    	abstract protected EntityPlayer getPlayer(final MessageContext ctx);
     	
         /**
          * Called when a message is received of the appropriate type. You can optionally return a reply message, or null if no reply is needed.

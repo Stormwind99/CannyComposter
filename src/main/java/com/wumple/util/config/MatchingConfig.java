@@ -6,10 +6,12 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import com.wumple.util.TypeIdentifier;
 import com.wumple.util.Util;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
@@ -18,13 +20,14 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.oredict.OreDictionary;
 
 /*
- * Wrapper around Forge HashMap<String, ?> configs for itemstack->value configs
+ * Wrapper around Forge HashMap<String, T> configs for (itemstack, item, entity, string)->value configs
  */
 public class MatchingConfig<T>
 {
 	protected final Map<String, T> config;
 	public final T FALSE_VALUE;
     public static final String FOOD_TAG = "minecraft:food";
+    public static final String PLAYER_TAG = "entity:player";
 
 	public MatchingConfig(Map<String, T> configIn, T falseValueIn)
 	{
@@ -32,12 +35,82 @@ public class MatchingConfig<T>
 		FALSE_VALUE = falseValueIn;
 	}
 	
-	public void init()
-	{
-		// add all defaults, then
-		// ConfigManager.sync(Reference.MOD_ID, Config.Type.INSTANCE);
-	}
+	/*
+	 *  If using this class and including default config properties, in mod postInit do:
+	 *  - add all defaults using addDefaultProperty, then
+	 *  - Call ConfigManager.sync(Reference.MOD_ID, Config.Type.INSTANCE);
+	 */
 	
+	// ----------------------------------------------------------------------
+	// Utility
+	
+	/**
+	 * @see TypeIdentifier for opposite direction but similiar code
+	 * @param itemStack for which to get namekeys for lookup
+	 * @return namekeys to search config for, in order
+	 */
+    static public ArrayList<String> getItemStackNameKeys(ItemStack itemStack)
+    {
+        ArrayList<String> nameKeys = new ArrayList<String>();
+        
+        if (itemStack == null)
+        {
+        	return nameKeys;
+        }
+
+        Item item = itemStack.getItem();
+
+        ResourceLocation loc = Item.REGISTRY.getNameForObject(item);
+        
+        if (loc != null)
+        {
+        	String key2 = loc.toString();
+
+        	nameKeys.add(key2 + "@" + itemStack.getMetadata());
+        	nameKeys.add(key2);
+        }
+
+        if (!itemStack.isEmpty())
+        {
+            int oreIds[] = OreDictionary.getOreIDs(itemStack);
+            for (int oreId : oreIds)
+            {
+                nameKeys.add(OreDictionary.getOreName(oreId));
+            }
+        }
+
+        if (item instanceof ItemFood)
+        {
+            nameKeys.add(FOOD_TAG);
+        }
+        
+        return nameKeys;
+    }
+
+    static public ArrayList<String> getEntityNameKeys(Entity entity)
+    {
+        ArrayList<String> nameKeys = new ArrayList<String>();
+        
+        if (entity == null)
+        {
+        	return nameKeys;
+        }
+
+    	String name = (entity == null) ? null : EntityList.getEntityString(entity);
+
+    	if (name != null)
+    	{
+    		nameKeys.add(name);
+    	}
+    	
+        if (entity instanceof EntityPlayer)
+        {
+        	nameKeys.add(PLAYER_TAG);
+        }
+        
+        return nameKeys;
+    }
+    
 	// ----------------------------------------------------------------------
 	// Add default properties to config
 	
@@ -103,9 +176,9 @@ public class MatchingConfig<T>
     }
     
     // ----------------------------------------------------------------------
-    // getPropertyBase - for internal use
-
-    protected T getPropertyBase(String key)
+    // Get value for different types
+ 
+    protected T getProperty(String key)
     {
         T amount = null;
         
@@ -116,15 +189,15 @@ public class MatchingConfig<T>
 
         return amount;
     }
-    
+           
     @Nullable
-    protected T getPropertyBase(List<String> keys)
+    protected T getProperty(List<String> keys)
     {
         T amount = null;
 
         for (String key : keys)
         {
-            amount = getPropertyBase(key);
+            amount = getProperty(key);
             if (amount != null)
             {
                 break;
@@ -134,9 +207,6 @@ public class MatchingConfig<T>
         return amount;
     }
     
-    // ----------------------------------------------------------------------
-    // Get value for different types
-
     /**
      * Get the highest priority value we match for stack
      * Checks all keys for stack - expands to multiple keys in defined order: id@meta, id, minecraft:food
@@ -145,47 +215,18 @@ public class MatchingConfig<T>
     @Nullable
     public T getProperty(ItemStack itemStack)
     {
-        if (itemStack == null)
-        {
-            return null;
-        }
-
-        ArrayList<String> nameKeys = new ArrayList<String>();
-
-        Item item = itemStack.getItem();
-
-        String key2 = Item.REGISTRY.getNameForObject(item).toString();
-
-        nameKeys.add(key2 + "@" + itemStack.getMetadata());
-        nameKeys.add(key2);
-
-        if (!itemStack.isEmpty())
-        {
-            int oreIds[] = OreDictionary.getOreIDs(itemStack);
-            for (int oreId : oreIds)
-            {
-                nameKeys.add(OreDictionary.getOreName(oreId));
-            }
-        }
-
-        if (item instanceof ItemFood)
-        {
-            nameKeys.add(FOOD_TAG);
-        }
-
-        return getPropertyBase(nameKeys);
+        return getProperty(getItemStackNameKeys(itemStack));
     }
     
     public T getProperty(Entity entity)
     {
-    	String name = (entity == null) ? null : EntityList.getEntityString(entity);
-    	return getPropertyBase(name);
+    	return getProperty(getEntityNameKeys(entity));
     }
     
     public T getProperty(ResourceLocation loc)
     {
 	   String key = (loc == null) ? null : loc.toString();
-       return getPropertyBase(key);	
+       return getProperty(key);	
     }
     
     public T getProperty(TileEntity it)
@@ -232,68 +273,21 @@ public class MatchingConfig<T>
      */
     public boolean doesIt(ItemStack stack)
     {
-        return getProperty(stack) != FALSE_VALUE;
+        return getValue(stack) != FALSE_VALUE;
     } 
     
     public boolean doesIt(Entity entity)
     {
-        return getProperty(entity) != FALSE_VALUE;
+        return getValue(entity) != FALSE_VALUE;
     } 
 
     public boolean doesIt(TileEntity entity)
     {
-        return getProperty(entity) != FALSE_VALUE;
+        return getValue(entity) != FALSE_VALUE;
     } 
 
     public boolean doesIt(ResourceLocation loc)
     {
-        return getProperty(loc) != FALSE_VALUE;
-    }
-    
-    // ----------------------------------------------------------------------
-    // TODO
-    
-    public static class Identifier
-    {
-        public String id = null;
-        public Integer meta = null;
-
-        Identifier()
-        {
-        }
-
-        Identifier(String idIn)
-        {
-            setID(idIn);
-        }
-        
-        Identifier(String idIn, Integer metaIn)
-        {
-            setID(idIn);
-            meta = metaIn;
-        }
-
-        public void setID(String key)
-        {
-            // metadata support - class:name@metadata
-            int length = (key != null) ? key.length() : 0;
-            if ((length >= 2) && (key.charAt(length - 2) == '@'))
-            {
-                String metastring = key.substring(length - 1);
-                meta = Integer.valueOf(metastring);
-                id = key.substring(0, length - 2);
-            }
-            else if ((length >= 3) && (key.charAt(length - 3) == '@'))
-            {
-                String metastring = key.substring(length - 2);
-                meta = Integer.valueOf(metastring);
-                id = key.substring(0, length - 3);
-            }
-            else
-            {
-                id = key;
-                meta = null;
-            }
-        }
+        return getValue(loc) != FALSE_VALUE;
     }
 }

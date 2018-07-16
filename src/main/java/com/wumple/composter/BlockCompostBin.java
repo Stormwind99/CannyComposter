@@ -121,7 +121,7 @@ public class BlockCompostBin extends BlockContainer
     
     @SideOnly(Side.CLIENT)
     @Override
-    public BlockRenderLayer getBlockLayer()
+    public BlockRenderLayer getRenderLayer()
     {
         return BlockRenderLayer.CUTOUT_MIPPED;
         //return BlockRenderLayer.SOLID;

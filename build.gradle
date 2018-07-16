@@ -201,9 +201,9 @@ bintray {
 task uploadAll {
     group 'upload'
     description 'Upload built mod and/or artifacts to all release/artifact locations'
+    dependsOn 'bintrayUpload'
+    dependsOn 'githubRelease'
     dependsOn 'curseforge'
-    dependsOn 'github'
-    dependsOn 'bintray'
 }
 
 // --------------------------------------------------------------------------
