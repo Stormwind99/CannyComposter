@@ -1,4 +1,4 @@
-package com.wumple.composter;
+package com.wumple.composter.bin;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;

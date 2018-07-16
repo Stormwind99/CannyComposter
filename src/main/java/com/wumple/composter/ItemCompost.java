@@ -1,5 +1,6 @@
 package com.wumple.composter;
 
+import com.wumple.composter.config.ModConfig;
 import com.wumple.util.RegistrationHelpers;
 
 import net.minecraft.block.IGrowable;

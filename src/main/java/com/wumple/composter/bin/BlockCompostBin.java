@@ -1,5 +1,6 @@
-package com.wumple.composter;
+package com.wumple.composter.bin;
 
+import com.wumple.composter.Composter;
 import com.wumple.util.RegistrationHelpers;
 
 import net.minecraft.block.BlockContainer;

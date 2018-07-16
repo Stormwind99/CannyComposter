@@ -1,4 +1,4 @@
-package com.wumple.composter;
+package com.wumple.composter.bin;
 
 import java.util.ArrayList;
 import java.util.List;

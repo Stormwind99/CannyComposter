@@ -25,7 +25,7 @@ public class Composter
     @EventHandler
     public void init(FMLInitializationEvent event) 
     {
-    	com.wumple.composter.ObjectHolder.RegistrationHandler.registerGuiHandlers();
+    	com.wumple.composter.config.ObjectHolder.RegistrationHandler.registerGuiHandlers();
     }
 
     @EventHandler

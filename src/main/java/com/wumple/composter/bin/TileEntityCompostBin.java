@@ -1,22 +1,21 @@
-package com.wumple.composter;
+package com.wumple.composter.bin;
 
+import com.wumple.composter.ConfigHandler;
+import com.wumple.composter.config.ModConfig;
 import com.wumple.util.SUtil;
-import com.wumple.util.Util;
+import com.wumple.util.TypeIdentifier;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -25,15 +24,15 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class TileEntityCompostBin extends TileEntity implements IInventory, ITickable
 {
-	static final int COMPOSTING_SLOTS = 9;
-	static final int TOTAL_SLOTS = COMPOSTING_SLOTS + 1;
-	static final int OUTPUT_SLOT = TOTAL_SLOTS - 1; 
-	static final int STACK_LIMIT = 64;
-	static final int NO_SLOT = -1;
-	static final int NO_DECOMPOSE_TIME = -1;
-	static final double USE_RANGE = 64.0D;
-	static final int PARTICLE_INTERVAL = 64;
-	static final int DECOMPOSE_TIME_MAX = 200;
+	public static final int COMPOSTING_SLOTS = 9;
+	public static final int TOTAL_SLOTS = COMPOSTING_SLOTS + 1;
+	public static final int OUTPUT_SLOT = TOTAL_SLOTS - 1; 
+	public static final int STACK_LIMIT = 64;
+	public static final int NO_SLOT = -1;
+	public static final int NO_DECOMPOSE_TIME = -1;
+	public static final double USE_RANGE = 64.0D;
+	public static final int PARTICLE_INTERVAL = 64;
+	public static final int DECOMPOSE_TIME_MAX = 200;
 	
 	private NonNullList<ItemStack> itemStacks = NonNullList.<ItemStack>withSize(TOTAL_SLOTS, ItemStack.EMPTY);
 
@@ -99,15 +98,33 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         }
         
         ItemStack outputSlotStack = itemStacks.get(OUTPUT_SLOT);
+        ItemStack newStack = getCompostItem(1);
         
-        if ( (outputSlotStack.getItem() != getCompostItem()) && !outputSlotStack.isEmpty() )
+        return canStack(outputSlotStack, newStack);
+    }
+    
+    protected boolean canStack(ItemStack itemstack1, ItemStack itemstack)
+    {
+        if (!itemstack1.isEmpty())
         {
-        	return false;
+            if (itemstack.isEmpty())
+            {
+                return true;
+            }
+            else if (ItemStack.areItemsEqual(itemstack, itemstack1) && ItemStack.areItemStackTagsEqual(itemstack, itemstack1))
+            {
+            	int count = itemstack.getCount() + itemstack1.getCount();
+            	if ((count <= getInventoryStackLimit()) && (count <= itemstack1.getMaxStackSize()))
+            	{
+            		//itemstack1.grow(itemstack.getCount());
+            		return true;
+            	}
+            }
+            
+            return false;
         }
-
-        int result = outputSlotStack.getCount() + 1;
         
-        return (result <= getInventoryStackLimit()) && (result <= outputSlotStack.getMaxStackSize());
+        return true;
     }
 
     public void compostItem()
@@ -126,7 +143,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
                 
                 if (!hasOutputItems())
                 {
-                	ItemStack resultStack = new ItemStack(getCompostItem());
+                	ItemStack resultStack = getCompostItem(1);
                     itemStacks.set(OUTPUT_SLOT, resultStack);
                 }
                 else
@@ -288,9 +305,10 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     	}
     }
     
-    protected Item getCompostItem()
+    protected ItemStack getCompostItem(int count)
     {
-    	return Util.getValueOrDefault(Item.REGISTRY.getObject(new ResourceLocation(ModConfig.compostItem)), Items.AIR);
+    	TypeIdentifier cid = new TypeIdentifier(ModConfig.compostItem);
+    	return cid.create(count);
     }
     
     // ----------------------------------------------------------------------

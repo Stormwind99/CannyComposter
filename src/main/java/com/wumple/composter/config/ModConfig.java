@@ -1,6 +1,8 @@
-package com.wumple.composter;
+package com.wumple.composter.config;
 
 import java.util.HashMap;
+
+import com.wumple.composter.Reference;
 
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Config.Name;

@@ -1,5 +1,11 @@
-package com.wumple.composter;
+package com.wumple.composter.config;
 
+import com.wumple.composter.Composter;
+import com.wumple.composter.ItemCompost;
+import com.wumple.composter.Reference;
+import com.wumple.composter.bin.BlockCompostBin;
+import com.wumple.composter.bin.ComposterGuiHandler;
+import com.wumple.composter.bin.TileEntityCompostBin;
 import com.wumple.util.RegistrationHelpers;
 
 import net.minecraft.block.Block;

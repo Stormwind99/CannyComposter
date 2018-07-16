@@ -1,5 +1,7 @@
 package com.wumple.composter;
 
+import com.wumple.composter.bin.TileEntityCompostBin;
+import com.wumple.composter.config.ModConfig;
 import com.wumple.util.config.MatchingConfig;
 
 import net.minecraft.init.Items;
