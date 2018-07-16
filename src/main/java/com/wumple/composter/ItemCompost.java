@@ -1,7 +1,7 @@
 package com.wumple.composter;
 
 import com.wumple.composter.config.ModConfig;
-import com.wumple.util.RegistrationHelpers;
+import com.wumple.util.misc.RegistrationHelpers;
 
 import net.minecraft.block.IGrowable;
 import net.minecraft.block.material.Material;

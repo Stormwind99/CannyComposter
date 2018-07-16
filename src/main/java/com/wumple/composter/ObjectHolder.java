@@ -3,8 +3,8 @@ package com.wumple.composter;
 import com.wumple.composter.bin.BlockCompostBin;
 import com.wumple.composter.bin.ComposterGuiHandler;
 import com.wumple.composter.bin.TileEntityCompostBin;
-import com.wumple.util.RegistrationHelpers;
-import com.wumple.util.TypeIdentifier;
+import com.wumple.util.misc.RegistrationHelpers;
+import com.wumple.util.misc.TypeIdentifier;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
