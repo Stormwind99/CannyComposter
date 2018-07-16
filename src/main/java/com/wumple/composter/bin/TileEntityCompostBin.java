@@ -2,8 +2,8 @@ package com.wumple.composter.bin;
 
 import com.wumple.composter.config.ConfigHandler;
 import com.wumple.composter.config.ModConfig;
-import com.wumple.util.SUtil;
-import com.wumple.util.TypeIdentifier;
+import com.wumple.util.misc.SUtil;
+import com.wumple.util.misc.TypeIdentifier;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
