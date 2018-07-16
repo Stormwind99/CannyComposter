@@ -1,5 +1,9 @@
 {
+  "_comment": [
+      "Decomposes organic material into compost"
+   ],
   "type": "forge:ore_shaped",
+  "group": "composter",
   "pattern": [
     "|||",
     "|||",
