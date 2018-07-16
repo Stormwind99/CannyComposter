@@ -1,10 +1,11 @@
 {
   "homepage": "https://github.com/Stormwind99/Composter",
   "promos": {
-    "1.12.2-latest": "1.2.0",
-    "1.12.2-recommended": "1.2.0"
+    "1.12.2-latest": "1.3.0",
+    "1.12.2-recommended": "1.3.0"
   },
   "1.12.2": {
+    "1.3.0": "Compost use effect.  Metadata and oredict support for compost item config field.",
     "1.2.0": "Added item configuration and many more compostable items",
     "1.1.0": "Fixed compost bin model",
     "1.0.0": "Initial version"
