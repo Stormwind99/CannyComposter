@@ -1,12 +1,10 @@
-package com.wumple.composter.config;
+package com.wumple.composter;
 
-import com.wumple.composter.Composter;
-import com.wumple.composter.ItemCompost;
-import com.wumple.composter.Reference;
 import com.wumple.composter.bin.BlockCompostBin;
 import com.wumple.composter.bin.ComposterGuiHandler;
 import com.wumple.composter.bin.TileEntityCompostBin;
 import com.wumple.util.RegistrationHelpers;
+import com.wumple.util.TypeIdentifier;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -33,6 +31,13 @@ public class ObjectHolder {
     public static /*final*/ Item compost = null;
 
     // ----------------------------------------------------------------------
+    // Ore Dictionary
+
+    protected final static String[] composters = {"composter"};
+    protected final static String[] fertilizers = {"fertilizer"};
+    protected final static String BONEMEAL = "minecraft:dye@15";
+    
+    // ----------------------------------------------------------------------
     // Events
 
     @Mod.EventBusSubscriber(modid = Reference.MOD_ID)
@@ -44,8 +49,10 @@ public class ObjectHolder {
         {
             final IForgeRegistry<Item> registry = event.getRegistry();
 
-            compost = RegistrationHelpers.regHelper(registry, new ItemCompost());
-            compost_bin_item = RegistrationHelpers.registerItemBlock(registry, compost_bin);
+            compost = RegistrationHelpers.regHelperOre(registry, new ItemCompost(), fertilizers);
+            compost_bin_item = RegistrationHelpers.registerItemBlockOre(registry, compost_bin, composters);
+            
+            RegistrationHelpers.registerOreNames(TypeIdentifier.build(BONEMEAL).create(1), fertilizers);
             
             registerTileEntities();
         }    
@@ -69,8 +76,6 @@ public class ObjectHolder {
         {
         	RegistrationHelpers.registerRender(compost);
         	RegistrationHelpers.registerRender(compost_bin, compost_bin_item);
-
-            // TODO ClientRegistry.bindTileEntitySpecialRenderer(TileEntityCompostBin.class, new TileEntityCompostRenderer());
         }
         
         public static void registerGuiHandlers()

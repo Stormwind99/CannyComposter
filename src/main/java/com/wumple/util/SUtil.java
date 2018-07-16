@@ -39,4 +39,31 @@ public class SUtil
         
         return itemStack;
 	}
+	
+	/*
+	 * Can itemstack replace or be added to destination? 
+	 */
+    public static boolean canStack(ItemStack destination, ItemStack itemstack)
+    {
+        if (!destination.isEmpty())
+        {
+            if (itemstack.isEmpty())
+            {
+                return true;
+            }
+            else if (ItemStack.areItemsEqual(itemstack, destination) && ItemStack.areItemStackTagsEqual(itemstack, destination))
+            {
+            	int count = itemstack.getCount() + destination.getCount();
+            	if (count <= destination.getMaxStackSize())
+            	{
+            		//destination.grow(itemstack.getCount());
+            		return true;
+            	}
+            }
+            
+            return false;
+        }
+        
+        return true;
+    }
 }

@@ -1,6 +1,6 @@
 package com.wumple.composter.bin;
 
-import com.wumple.composter.ConfigHandler;
+import com.wumple.composter.config.ConfigHandler;
 import com.wumple.composter.config.ModConfig;
 import com.wumple.util.SUtil;
 import com.wumple.util.TypeIdentifier;
@@ -100,33 +100,9 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         ItemStack outputSlotStack = itemStacks.get(OUTPUT_SLOT);
         ItemStack newStack = getCompostItem(1);
         
-        return canStack(outputSlotStack, newStack);
+        return SUtil.canStack(outputSlotStack, newStack);
     }
     
-    protected boolean canStack(ItemStack itemstack1, ItemStack itemstack)
-    {
-        if (!itemstack1.isEmpty())
-        {
-            if (itemstack.isEmpty())
-            {
-                return true;
-            }
-            else if (ItemStack.areItemsEqual(itemstack, itemstack1) && ItemStack.areItemStackTagsEqual(itemstack, itemstack1))
-            {
-            	int count = itemstack.getCount() + itemstack1.getCount();
-            	if ((count <= getInventoryStackLimit()) && (count <= itemstack1.getMaxStackSize()))
-            	{
-            		//itemstack1.grow(itemstack.getCount());
-            		return true;
-            	}
-            }
-            
-            return false;
-        }
-        
-        return true;
-    }
-
     public void compostItem()
     {
         if (canCompost())

@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -26,18 +27,37 @@ public class RegistrationHelpers
         return thing;
     }
 
-    public static Item regHelperOre(IForgeRegistry<Item> registry, Item thing, String[] oreNames)
+    public static Item registerOreNames(Item thing, String[] oreNames)
     {
     	assert(thing != null);
     	
-        registry.register(thing);
-        
         for (String oreName : oreNames)
         {
         	OreDictionary.registerOre(oreName, thing);
         }
         
         return thing;
+    }
+    
+    public static ItemStack registerOreNames(ItemStack thing, String[] oreNames)
+    {
+    	assert(thing != null);
+    	
+        for (String oreName : oreNames)
+        {
+        	OreDictionary.registerOre(oreName, thing);
+        }
+        
+        return thing;
+    }
+    
+    public static Item regHelperOre(IForgeRegistry<Item> registry, Item thing, String[] oreNames)
+    {
+    	assert(thing != null);
+    	
+        registry.register(thing);
+        
+        return registerOreNames(thing, oreNames);
     }
     
     public static <T extends IForgeRegistryEntry<T>> T regHelper(IForgeRegistry<T> registry, T thing,

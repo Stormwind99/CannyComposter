@@ -2,6 +2,8 @@ package com.wumple.composter;
 
 import org.apache.logging.log4j.Logger;
 
+import com.wumple.composter.config.ConfigHandler;
+
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -25,7 +27,7 @@ public class Composter
     @EventHandler
     public void init(FMLInitializationEvent event) 
     {
-    	com.wumple.composter.config.ObjectHolder.RegistrationHandler.registerGuiHandlers();
+    	com.wumple.composter.ObjectHolder.RegistrationHandler.registerGuiHandlers();
     }
 
     @EventHandler

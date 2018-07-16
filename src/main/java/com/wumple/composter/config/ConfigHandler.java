@@ -1,7 +1,7 @@
-package com.wumple.composter;
+package com.wumple.composter.config;
 
+import com.wumple.composter.Reference;
 import com.wumple.composter.bin.TileEntityCompostBin;
-import com.wumple.composter.config.ModConfig;
 import com.wumple.util.config.MatchingConfig;
 
 import net.minecraft.init.Items;
@@ -14,7 +14,6 @@ public class ConfigHandler
 	
 	public static void init()
 	{
-		compostAmounts.addDefaultProperty("minecraft:food", 125);
 		compostAmounts.addDefaultProperty(Items.ROTTEN_FLESH, "minecraft:rotten_flesh", 100);
 		compostAmounts.addDefaultProperty("composter:compost_bin", 125);
 		compostAmounts.addDefaultProperty("minecraft:wooden_axe", 125);
@@ -31,7 +30,7 @@ public class ConfigHandler
 		// Food Funk mod
 		compostAmounts.addDefaultProperty("foodfunk:spoiled_milk", 100);
 		compostAmounts.addDefaultProperty("foodfunk:rotten_food", 100);
-		compostAmounts.addDefaultProperty("foodfunk:rotten_item", 100);
+		compostAmounts.addDefaultProperty("foodfunk:biodegradable_item", 100);
 		
 		// ore dict
         compostAmounts.addDefaultProperty("logWood", 125);
@@ -74,46 +73,14 @@ public class ConfigHandler
         compostAmounts.addDefaultProperty("blockSlime", 125);
         compostAmounts.addDefaultProperty("chestWood", 125);
         
-        
+        // default for food
+        compostAmounts.addDefaultProperty("minecraft:food", 125);
+        compostAmounts.addDefaultProperty("compostable", 125);
         
         ConfigManager.sync(Reference.MOD_ID, Config.Type.INSTANCE);
 	}
 	
-	
 		/*
-
-		// More ideas 
-		 
-        if (item instanceof ItemEgg)
-        {
-        	return 100;
-        }
-        
-        if (item instanceof ItemBucketMilk)
-        {
-        	return 200;
-        }
-        
-        if (item instanceof ItemSeeds)
-        {
-        	return 125;
-        }
-        
-        if (item instanceof ItemPotion)
-        {
-        	return 200;
-        }
-        
-        if (item instanceof ItemTool)
-        {
-        	ItemTool tool = (ItemTool)item;
-        	if (tool.getToolMaterialName().equalsIgnoreCase("WOOD"))
-        	{
-        		// MAYBE vary amount on item damage, and damage item as it composts
-        		return 300;
-        	}
-        }
-     
         // MAYBE more items
         // ItemArmor material leather
         // ItemArrow
@@ -135,6 +102,7 @@ public class ConfigHandler
         // ItemMapBase
         // MAPBASE: ItemMap
         // ItemSaddle
+        // ItemSeeds
         // ItemSeedFood (?)
         // ItemSign
         // ItemSkull
@@ -143,9 +111,6 @@ public class ConfigHandler
         // ItemSnowball
         // ItemSoup
         // ItemSword if wood
-        // TOOL: ItemAxe if wood
-        // TOOL: ItemSpade if wood
-        // TOOL: ItemPickaxe if wood
         // ItemWritableBook
         // ItemWrittenBook
         // ItemEnchantedBook
@@ -274,7 +239,5 @@ public class ConfigHandler
         public static final Item BEETROOT_SOUP;
         public static final Item SHULKER_SHELL;
         public static final Item KNOWLEDGE_BOOK;
-        
          */
-	
 }

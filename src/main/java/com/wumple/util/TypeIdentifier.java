@@ -13,6 +13,16 @@ public class TypeIdentifier
 	protected static Random random = new Random();
     public String id = null;
     public Integer meta = null;
+    
+    public static TypeIdentifier build()
+    {
+    	return new TypeIdentifier();
+    }
+    
+    public static TypeIdentifier build(String idIn)
+    {
+    	return new TypeIdentifier(idIn);
+    }
 
     public TypeIdentifier()
     {
