@@ -2,3 +2,6 @@ composter.compost_bin=Compost Bin
 container.composter.compost_bin=Compost Bin
 item.composter.compost.name=Compost
 tile.composter.compost_bin.name=Compost Bin
+
+advancements.composter.make_compost.title=Wormfood
+advancements.composter.make_compost.description=Make compost in a compost bin

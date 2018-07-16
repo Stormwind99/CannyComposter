@@ -1,0 +1,37 @@
+{
+    "display": {
+        "icon": {
+            "item": "composter:compost"
+        },
+        "title": {
+            "translate": "advancements.composter.make_compost.title"
+        },
+        "description": {
+            "translate": "advancements.composter.make_compost.description"
+        },
+        "frame": "challenge"
+    },
+    "parent": "minecraft:husbandry/plant_seed",
+    "rewards": {
+        "experience": 10
+    },
+  "criteria": {
+    "has_the_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "composter:compost"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "composter:compost_bin"
+      }
+    }
+  }
+}
+
