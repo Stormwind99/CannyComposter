@@ -8,6 +8,8 @@ Use excess organic material, excess food, or [rotten food](https://github.com/St
 * Default [configuration](https://github.com/Stormwind99/Composter/wiki/Configuration) entries support vanilla Minecraft and [other mods](https://github.com/Stormwind99/Composter/wiki/Compatibility). 
 * Any item from any mod can be [specified](https://github.com/Stormwind99/Composter/wiki/Configuration), and specifiers include support for metadata and ore dictionary names.
 
+Requires [Wumple Util Library](https://github.com/Stormwind99/WumpleUtil).
+
 ## Screenshots
 
 ![Steaming and empty compost bins](https://github.com/Stormwind99/Composter/raw/master/other/screenshots/screenshot-0.png)
