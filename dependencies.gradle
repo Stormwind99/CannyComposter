@@ -21,4 +21,3 @@ dependencies {
     //compile "com.wumple:wumpleutil:2.0.0"
     compile 'upload:wumpleutil:2.2.1'
 }
-
