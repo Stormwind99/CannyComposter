@@ -72,13 +72,6 @@ public class ConfigHandler
         compostAmounts.addDefaultProperty("workbench", 125);
         compostAmounts.addDefaultProperty("blockSlime", 125);
         compostAmounts.addDefaultProperty("chestWood", 125);
-        
-        // default for food
-        compostAmounts.addDefaultProperty("minecraft:food", 125);
-        compostAmounts.addDefaultProperty("compostable", 125);
-        
-        // Minecraft and Pam's Harvestcraft - Seeds:
-        compostAmounts.addDefaultProperty("seedAllist", 125);
 
         // AgriCraft - Seeds:
         compostAmounts.addDefaultProperty("agricraft:agri_seed", 125);
@@ -92,6 +85,18 @@ public class ConfigHandler
         // Hatchery - Chicken Manure + Chicken Feed:
         compostAmounts.addDefaultProperty("hatchery:chickenmanure", 125);
         compostAmounts.addDefaultProperty("hatchery:chicken_feed", 125);
+        
+        // ADD NEW SPECIFIC ENTRIES HERE!
+        
+        // Minecraft and Pam's Harvestcraft - Seeds:
+        // NOTE I can't find this in sources anywhere - is it real?
+        compostAmounts.addDefaultProperty("listAllseed", 125);
+        
+        // ADD NEW GENERAL ENTRIES HERE!
+        
+        // default for food
+        compostAmounts.addDefaultProperty("minecraft:food", 125);
+        compostAmounts.addDefaultProperty("compostable", 125);
         
         ConfigManager.sync(Reference.MOD_ID, Config.Type.INSTANCE);
 	}
@@ -153,7 +158,7 @@ public class ConfigHandler
         public static final Item FEATHER;
         public static final Item GUNPOWDER;
         public static final Item WOODEN_HOE;
-        public static final Item WHEAT_SEEDS;
+        
         public static final Item WHEAT;
         public static final Item BREAD;
         public static final ItemArmor LEATHER_HELMET;
@@ -202,8 +207,6 @@ public class ConfigHandler
         public static final Item COOKIE;
         public static final ItemMap FILLED_MAP;
         public static final Item MELON;
-        public static final Item PUMPKIN_SEEDS;
-        public static final Item MELON_SEEDS;
         public static final Item BEEF;
         public static final Item COOKED_BEEF;
         public static final Item CHICKEN;
@@ -250,7 +253,6 @@ public class ConfigHandler
         public static final Item SHIELD;
         public static final Item CHORUS_FRUIT;
         public static final Item CHORUS_FRUIT_POPPED;
-        public static final Item BEETROOT_SEEDS;
         public static final Item BEETROOT;
         public static final Item BEETROOT_SOUP;
         public static final Item SHULKER_SHELL;

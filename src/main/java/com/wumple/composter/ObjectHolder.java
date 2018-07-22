@@ -7,6 +7,7 @@ import com.wumple.util.misc.RegistrationHelpers;
 import com.wumple.util.misc.TypeIdentifier;
 
 import net.minecraft.block.Block;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.event.RegistryEvent;
@@ -16,6 +17,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.registries.IForgeRegistry;
 
 @GameRegistry.ObjectHolder("composter")
@@ -36,6 +38,7 @@ public class ObjectHolder {
     protected final static String[] composters = {"composter"};
     protected final static String[] fertilizers = {"fertilizer"};
     protected final static String BONEMEAL = "minecraft:dye@15";
+    public static final String listAllseed="listAllseed";
     
     // ----------------------------------------------------------------------
     // Events
@@ -53,6 +56,10 @@ public class ObjectHolder {
             compost_bin_item = RegistrationHelpers.registerItemBlockOre(registry, compost_bin, composters);
             
             RegistrationHelpers.registerOreNames(TypeIdentifier.build(BONEMEAL).create(1), fertilizers);
+            OreDictionary.registerOre(listAllseed, Items.WHEAT_SEEDS);
+            OreDictionary.registerOre(listAllseed, Items.BEETROOT_SEEDS);
+            OreDictionary.registerOre(listAllseed, Items.PUMPKIN_SEEDS);
+            OreDictionary.registerOre(listAllseed, Items.MELON_SEEDS);
             
             registerTileEntities();
         }    
