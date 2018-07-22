@@ -41,6 +41,7 @@ public class ObjectHolder {
         protected final static String[] composters = {"composter"};
         protected final static String[] fertilizers = {"fertilizer"};
         protected final static String BONEMEAL = "minecraft:dye@15";
+        protected final static String BONEMEALOREDICT = "bonemeal";
         public static final String listAllseed="listAllseed";
     }
     
@@ -60,6 +61,7 @@ public class ObjectHolder {
             compost_bin_item = RegistrationHelpers.registerItemBlockOre(registry, compost_bin, Ids.composters);
             
             RegistrationHelpers.registerOreNames(TypeIdentifier.build(Ids.BONEMEAL).create(1), Ids.fertilizers);
+            OreDictionary.registerOre(Ids.BONEMEALOREDICT, TypeIdentifier.build(Ids.BONEMEAL).create(1));
             OreDictionary.registerOre(Ids.listAllseed, Items.WHEAT_SEEDS);
             OreDictionary.registerOre(Ids.listAllseed, Items.BEETROOT_SEEDS);
             OreDictionary.registerOre(Ids.listAllseed, Items.PUMPKIN_SEEDS);
