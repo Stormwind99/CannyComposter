@@ -77,6 +77,22 @@ public class ConfigHandler
         compostAmounts.addDefaultProperty("minecraft:food", 125);
         compostAmounts.addDefaultProperty("compostable", 125);
         
+        // Minecraft and Pam's Harvestcraft - Seeds:
+        compostAmounts.addDefaultProperty("seedAllist", 125);
+
+        // AgriCraft - Seeds:
+        compostAmounts.addDefaultProperty("agricraft:agri_seed", 125);
+
+        // ATLCraft Candles Mod - Seeds:
+        compostAmounts.addDefaultProperty("atlcraft:atlcraft_bayberry_seeds", 125);
+
+        // Garden Stuff - Seeds:
+        compostAmounts.addDefaultProperty("gardenstuff:candelilla_seeds", 125);
+
+        // Hatchery - Chicken Manure + Chicken Feed:
+        compostAmounts.addDefaultProperty("hatchery:chickenmanure", 125);
+        compostAmounts.addDefaultProperty("hatchery:chicken_feed", 125);
+        
         ConfigManager.sync(Reference.MOD_ID, Config.Type.INSTANCE);
 	}
 	
