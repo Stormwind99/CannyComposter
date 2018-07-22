@@ -1,6 +1,7 @@
 package com.wumple.composter.config;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.wumple.composter.Reference;
 
@@ -44,7 +45,7 @@ public class ModConfig
         @Name("Compost amount")
         @Config.Comment("Compost amount, -1 means item doesn't compost")
         @RangeInt(min = -1)
-        public HashMap<String, Integer> amount = new HashMap<String, Integer>();
+        public Map<String, Integer> amount = new LinkedHashMap<String, Integer>();
     }
     
     @Name("Debugging")
