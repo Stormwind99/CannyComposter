@@ -54,49 +54,49 @@ public class ConfigHandler
 
         // misc materials
         compostAmounts.addDefaultProperty("dye", 125);
-        compostAmounts.addDefaultProperty("paper", 125);
+        compostAmounts.addDefaultProperty("paper", 75);
 
         // mob drops
         compostAmounts.addDefaultProperty("slimeball", 125);
         
         compostAmounts.addDefaultProperty("bone", 125);
         compostAmounts.addDefaultProperty("gunpowder", 125);
-        compostAmounts.addDefaultProperty("string", 125);
+        compostAmounts.addDefaultProperty("string", 50);
         compostAmounts.addDefaultProperty("leather", 125);
         compostAmounts.addDefaultProperty("feather", 125);
         compostAmounts.addDefaultProperty("egg", 125);
         
-        compostAmounts.addDefaultProperty("grass", 125);
+        compostAmounts.addDefaultProperty("grass", 50);
              
-        compostAmounts.addDefaultProperty("torch", 125);
+        compostAmounts.addDefaultProperty("torch", 75);
         compostAmounts.addDefaultProperty("workbench", 125);
         compostAmounts.addDefaultProperty("blockSlime", 125);
         compostAmounts.addDefaultProperty("chestWood", 125);
 
         // AgriCraft - Seeds:
-        compostAmounts.addDefaultProperty("agricraft:agri_seed", 125);
+        compostAmounts.addDefaultProperty("agricraft:agri_seed", 50);
 
         // ATLCraft Candles Mod - Seeds:
-        compostAmounts.addDefaultProperty("atlcraft:atlcraft_bayberry_seeds", 125);
+        compostAmounts.addDefaultProperty("atlcraft:atlcraft_bayberry_seeds", 50);
 
         // Garden Stuff - Seeds:
-        compostAmounts.addDefaultProperty("gardenstuff:candelilla_seeds", 125);
+        compostAmounts.addDefaultProperty("gardenstuff:candelilla_seeds", 50);
 
         // Hatchery - Chicken Manure + Chicken Feed:
-        compostAmounts.addDefaultProperty("hatchery:chickenmanure", 125);
-        compostAmounts.addDefaultProperty("hatchery:chicken_feed", 125);
+        compostAmounts.addDefaultProperty("hatchery:chickenmanure", 50);
+        compostAmounts.addDefaultProperty("hatchery:chicken_feed", 50);
         
         // ADD NEW SPECIFIC ENTRIES HERE!
         
         // Minecraft and Pam's Harvestcraft - Seeds:
         // NOTE I can't find this in sources anywhere - is it real?
-        compostAmounts.addDefaultProperty("listAllseed", 125);
+        compostAmounts.addDefaultProperty("listAllseed", 50);
         
         // ADD NEW GENERAL ENTRIES HERE!
         
         // default for food
         compostAmounts.addDefaultProperty("minecraft:food", 125);
-        compostAmounts.addDefaultProperty("compostable", 125);
+        compostAmounts.addDefaultProperty("compostable", 100);
         
         ConfigManager.sync(Reference.MOD_ID, Config.Type.INSTANCE);
 	}
