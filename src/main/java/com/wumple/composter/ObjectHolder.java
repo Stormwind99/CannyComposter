@@ -3,6 +3,7 @@ package com.wumple.composter;
 import com.wumple.composter.bin.BlockCompostBin;
 import com.wumple.composter.bin.ComposterGuiHandler;
 import com.wumple.composter.bin.TileEntityCompostBin;
+import com.wumple.composter.compost.ItemCompost;
 import com.wumple.util.misc.RegistrationHelpers;
 import com.wumple.util.misc.TypeIdentifier;
 
@@ -35,10 +36,13 @@ public class ObjectHolder {
     // ----------------------------------------------------------------------
     // Ore Dictionary
 
-    protected final static String[] composters = {"composter"};
-    protected final static String[] fertilizers = {"fertilizer"};
-    protected final static String BONEMEAL = "minecraft:dye@15";
-    public static final String listAllseed="listAllseed";
+    public static class Ids
+    {
+        protected final static String[] composters = {"composter"};
+        protected final static String[] fertilizers = {"fertilizer"};
+        protected final static String BONEMEAL = "minecraft:dye@15";
+        public static final String listAllseed="listAllseed";
+    }
     
     // ----------------------------------------------------------------------
     // Events
@@ -52,14 +56,14 @@ public class ObjectHolder {
         {
             final IForgeRegistry<Item> registry = event.getRegistry();
 
-            compost = RegistrationHelpers.regHelperOre(registry, new ItemCompost(), fertilizers);
-            compost_bin_item = RegistrationHelpers.registerItemBlockOre(registry, compost_bin, composters);
+            compost = RegistrationHelpers.regHelperOre(registry, new ItemCompost(), Ids.fertilizers);
+            compost_bin_item = RegistrationHelpers.registerItemBlockOre(registry, compost_bin, Ids.composters);
             
-            RegistrationHelpers.registerOreNames(TypeIdentifier.build(BONEMEAL).create(1), fertilizers);
-            OreDictionary.registerOre(listAllseed, Items.WHEAT_SEEDS);
-            OreDictionary.registerOre(listAllseed, Items.BEETROOT_SEEDS);
-            OreDictionary.registerOre(listAllseed, Items.PUMPKIN_SEEDS);
-            OreDictionary.registerOre(listAllseed, Items.MELON_SEEDS);
+            RegistrationHelpers.registerOreNames(TypeIdentifier.build(Ids.BONEMEAL).create(1), Ids.fertilizers);
+            OreDictionary.registerOre(Ids.listAllseed, Items.WHEAT_SEEDS);
+            OreDictionary.registerOre(Ids.listAllseed, Items.BEETROOT_SEEDS);
+            OreDictionary.registerOre(Ids.listAllseed, Items.PUMPKIN_SEEDS);
+            OreDictionary.registerOre(Ids.listAllseed, Items.MELON_SEEDS);
             
             registerTileEntities();
         }    

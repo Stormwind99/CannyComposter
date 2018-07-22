@@ -1,4 +1,4 @@
-package com.wumple.composter;
+package com.wumple.composter.compost;
 
 import com.wumple.composter.config.ModConfig;
 import com.wumple.util.misc.RegistrationHelpers;
