@@ -7,16 +7,16 @@ import net.minecraft.item.ItemStack;
 
 public class SlotCompostOutput extends Slot
 {
-    //private final IInventory inputInventory;
+    // private final IInventory inputInventory;
     private EntityPlayer player;
     private int amountCrafted;
 
-    public SlotCompostOutput (EntityPlayer player, IInventory inputInventory, int par2, int par3, int par4)
+    public SlotCompostOutput(EntityPlayer player, IInventory inputInventory, int par2, int par3, int par4)
     {
         super(inputInventory, par2, par3, par4);
 
         this.player = player;
-        //this.inputInventory = inputInventory;
+        // this.inputInventory = inputInventory;
     }
 
     @Override
@@ -49,14 +49,14 @@ public class SlotCompostOutput extends Slot
         itemStack.onCrafting(player.getEntityWorld(), player, amountCrafted);
         amountCrafted = 0;
 
-        //FMLCommonHandler.instance().firePlayerCraftingEvent(thePlayer, stack, inputInventory);
+        // FMLCommonHandler.instance().firePlayerCraftingEvent(thePlayer, stack, inputInventory);
     }
 
     @Override
     public ItemStack onTake(EntityPlayer thePlayer, ItemStack stack)
     {
-    	//FMLCommonHandler.instance().firePlayerCraftingEvent(thePlayer, stack, inputInventory);
-        
+        // FMLCommonHandler.instance().firePlayerCraftingEvent(thePlayer, stack, inputInventory);
+
         onCrafting(stack);
 
         return super.onTake(thePlayer, stack);

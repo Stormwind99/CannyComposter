@@ -70,6 +70,8 @@ public class GuiCompostBin extends GuiContainer
         GL11.glPopAttrib();
     }
     */
+    
+    static final int progressSize = 24;
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY)
@@ -80,10 +82,10 @@ public class GuiCompostBin extends GuiContainer
         int halfH = (this.height - this.ySize) / 2;
         this.drawTexturedModalRect(halfW, halfH, 0, 0, this.xSize, this.ySize);
 
-        if (tileCompost.binDecomposeTime > 0 || tileCompost.itemDecomposeCount > 0)
+        if (tileCompost.isActive())
         {
-            int timeRemaining = tileCompost.getDecomposeTimeRemainingScaled(24);
-            drawTexturedModalRect(halfW + 89, halfH + 34, 176, 0, 24 - timeRemaining + 1, 16);
+            int timeRemaining = tileCompost.getDecomposeTimeRemainingScaled(progressSize);
+            drawTexturedModalRect(halfW + 89, halfH + 34, 176, 0, progressSize - timeRemaining + 1, 16);
         }
     }
 

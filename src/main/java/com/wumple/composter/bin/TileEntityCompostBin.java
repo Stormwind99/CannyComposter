@@ -1,5 +1,7 @@
 package com.wumple.composter.bin;
 
+import javax.annotation.Nullable;
+
 import com.wumple.composter.config.ConfigHandler;
 import com.wumple.composter.config.ModConfig;
 import com.wumple.util.misc.SUtil;
@@ -32,30 +34,30 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
 	public static final int NO_DECOMPOSE_TIME = -1;
 	public static final double USE_RANGE = 64.0D;
 	public static final int PARTICLE_INTERVAL = 64;
-	public static final int DECOMPOSE_TIME_MAX = 200;
+	//public static final int DECOMPOSE_TIME_MAX = 200;
 	
 	private NonNullList<ItemStack> itemStacks = NonNullList.<ItemStack>withSize(TOTAL_SLOTS, ItemStack.EMPTY);
 
-    // The number of ticks remaining to decompose the current item
-    public int binDecomposeTime = NO_DECOMPOSE_TIME;
+    // The number of units the current item has been decomposing
+    public int currentItemProgress = NO_DECOMPOSE_TIME;
 
     // The slot actively being decomposed
     private int currentItemSlot = NO_SLOT;
 
-    // The number of ticks that a fresh copy of the currently-decomposing item would decompose for
-    public int currentItemDecomposeTime;
+    // The number of units that a fresh copy of the currently-decomposing item would decompose for
+    public int currentItemDecomposeTime = NO_DECOMPOSE_TIME;
 
-    // number of items decomposed since last compost generation
-    public int itemDecomposeCount;
+    // number of units decomposed since last compost generation
+    public int binDecomposeProgress = 0;
 
     private String customName;
     
     // ----------------------------------------------------------------------
     // TileEntityCompostBin
     
-    public int getDecompTime()
+    public int getCurrentItemProgress()
     {
-        return binDecomposeTime;
+        return currentItemProgress;
     }
 
     public int getCurrentItemDecompTime()
@@ -65,24 +67,31 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
 
     public boolean isDecomposing()
     {
-        return binDecomposeTime > 0;
+        return currentItemProgress > 0;
     }
-
-    protected int getDecomposeNeeded()
+    
+    public boolean isActive()
     {
-    	return ModConfig.decomposeNeeded;
+        return (currentItemProgress > 0) || (binDecomposeProgress > 0) ;
+    }
+    
+    protected int getDecomposeUnitsNeeded()
+    {
+    	return ModConfig.decomposeUnitsNeeded;
     }
     
     @SideOnly(Side.CLIENT)
     public int getDecomposeTimeRemainingScaled(int scale)
     {
-        if (currentItemDecomposeTime == 0)
+        if (currentItemDecomposeTime == NO_DECOMPOSE_TIME)
         {
-            currentItemDecomposeTime = DECOMPOSE_TIME_MAX;
+            return 0; // currentItemDecomposeTime = DECOMPOSE_TIME_MAX;
         }
+        
+        double ratio = (double)(currentItemProgress + binDecomposeProgress) / ModConfig.decomposeUnitsNeeded;
+        return (int)(ratio * scale);
 
-        //return binDecomposeTime * scale / currentItemDecomposeTime;
-        return (getDecomposeNeeded() - itemDecomposeCount) * scale / COMPOSTING_SLOTS + (binDecomposeTime * scale / (currentItemDecomposeTime * COMPOSTING_SLOTS));
+        //return (getDecomposeNeeded() - itemDecomposeCount) * scale / COMPOSTING_SLOTS + (binDecomposeTime * scale / (currentItemDecomposeTime * COMPOSTING_SLOTS));
     }
 
     private boolean canCompost()
@@ -103,20 +112,26 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         return SUtil.canStack(outputSlotStack, newStack);
     }
     
+    protected void forgetCurrentItem()
+    {
+        currentItemSlot = NO_SLOT;
+        currentItemProgress = NO_DECOMPOSE_TIME;
+        currentItemDecomposeTime = NO_DECOMPOSE_TIME;
+    }
+    
     public void compostItem()
     {
         if (canCompost())
         {
-        	int decomposeNeeded = getDecomposeNeeded();
+        	int decomposeUnitsNeeded = getDecomposeUnitsNeeded();
         	
-            if (itemDecomposeCount < decomposeNeeded)
+            if (binDecomposeProgress < decomposeUnitsNeeded)
             {
-                itemDecomposeCount++;
+                binDecomposeProgress+=currentItemDecomposeTime;
             }
 
-            if (itemDecomposeCount >= decomposeNeeded)
+            if (binDecomposeProgress >= decomposeUnitsNeeded)
             {
-                
                 if (!hasOutputItems())
                 {
                 	ItemStack resultStack = getCompostItem(1);
@@ -127,13 +142,12 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
                     itemStacks.get(OUTPUT_SLOT).grow(1);
                 }
 
-                itemDecomposeCount = 0;
+                binDecomposeProgress -= decomposeUnitsNeeded;
             }
 
             SUtil.shrink(itemStacks, currentItemSlot, 1);
 
-            currentItemSlot = NO_SLOT;
-            binDecomposeTime = NO_DECOMPOSE_TIME; 
+            forgetCurrentItem();
         }
     }
     
@@ -257,9 +271,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         }  
         else if ((index == currentItemSlot) && !isItemDecomposable(itemStacks.get(index)) )
         {
-            currentItemSlot = NO_SLOT;
-            binDecomposeTime = NO_DECOMPOSE_TIME;
-            currentItemDecomposeTime = 0;
+            forgetCurrentItem();
             updateBlockState();
         }
     }
@@ -267,7 +279,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     protected void checkParticles()
     {
     	// show some steam particles when composting
-    	if (isDecomposing() && (binDecomposeTime % PARTICLE_INTERVAL == 0))
+    	if (isDecomposing() && (currentItemProgress % PARTICLE_INTERVAL == 0))
     	{
     		float ratio = getFilledRatio();
     		double x = (double)pos.getX() + 0.5D;
@@ -297,9 +309,9 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         
         ItemStackHelper.loadAllItems(compound, this.itemStacks);
 
-        binDecomposeTime = compound.getShort("DecompTime");
-        currentItemSlot = compound.getByte("DecompSlot");
-        itemDecomposeCount = compound.getByte("DecompCount");
+        currentItemProgress = compound.getInteger("decompItemProgress");
+        currentItemSlot = compound.getByte("decompBinSlot");
+        binDecomposeProgress = compound.getInteger("decompBinProgress");
 
         if (currentItemSlot >= 0)
         {
@@ -321,9 +333,9 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     {
         super.writeToNBT(compound);
 
-        compound.setShort("DecompTime", (short)binDecomposeTime);
-        compound.setByte("DecompSlot", (byte)currentItemSlot);
-        compound.setByte("DecompCount", (byte)itemDecomposeCount);
+        compound.setInteger("decompItemProgress", currentItemProgress);
+        compound.setByte("decompBinSlot", (byte)currentItemSlot);
+        compound.setInteger("decompBinProgress", binDecomposeProgress);
 
         ItemStackHelper.saveAllItems(compound, this.itemStacks);
  
@@ -385,19 +397,19 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
 
         if (isDecomposing)
         {
-            --binDecomposeTime;            
+            currentItemProgress++;            
         }
 
         if (!this.getWorld().isRemote)
         {             
         	checkParticles();
 
-            int decompCount = itemDecomposeCount;
+            int decompCount = binDecomposeProgress;
             int filledSlotCount = getFilledSlots();
 
             if ( isDecomposing || (filledSlotCount > 0) )
             {
-                if (binDecomposeTime <= 0)
+                if (currentItemProgress > currentItemDecomposeTime)
                 {
                     if (canCompost())
                     {
@@ -405,15 +417,15 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
                         shouldUpdate = true;
                     }
 
+                    forgetCurrentItem();
                     currentItemSlot = selectRandomFilledSlot();
-                    currentItemDecomposeTime = 0;
 
                     if ( (currentItemSlot >= 0) && (!hasOutputItems() || itemStacks.get(OUTPUT_SLOT).getCount() < STACK_LIMIT) )
                     {
                         currentItemDecomposeTime = getItemDecomposeTime(itemStacks.get(currentItemSlot));
-                        binDecomposeTime = currentItemDecomposeTime;
+                        currentItemProgress = 0;
 
-                        if (binDecomposeTime > 0)
+                        if (currentItemDecomposeTime > NO_DECOMPOSE_TIME)
                         {
                             shouldUpdate = true;
                         }
@@ -421,7 +433,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
                 }
             }
 
-            if (isDecomposing != isDecomposing() || (decompCount != itemDecomposeCount) )
+            if (isDecomposing != isDecomposing() || (decompCount != binDecomposeProgress) )
             {
                 shouldUpdate = true;
             }
@@ -574,8 +586,8 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
   
     @SuppressWarnings("unchecked")
     @Override
-    @javax.annotation.Nullable
-    public <T> T getCapability(net.minecraftforge.common.capabilities.Capability<T> capability, @javax.annotation.Nullable net.minecraft.util.EnumFacing facing)
+    @Nullable
+    public <T> T getCapability(net.minecraftforge.common.capabilities.Capability<T> capability, @Nullable net.minecraft.util.EnumFacing facing)
     {
         if (capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
             return (T) (itemHandler == null ? (itemHandler = createUnSidedHandler()) : itemHandler);
@@ -583,7 +595,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     }
 
     @Override
-    public boolean hasCapability(net.minecraftforge.common.capabilities.Capability<?> capability, @javax.annotation.Nullable net.minecraft.util.EnumFacing facing)
+    public boolean hasCapability(net.minecraftforge.common.capabilities.Capability<?> capability, @Nullable net.minecraft.util.EnumFacing facing)
     {
         return capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
     }

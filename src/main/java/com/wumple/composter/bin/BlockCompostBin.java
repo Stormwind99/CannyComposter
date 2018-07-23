@@ -32,16 +32,16 @@ public class BlockCompostBin extends BlockContainer
 {
     // ----------------------------------------------------------------------
     // BlockCompostBin
-	
-	public static final int NUM_LEVELS = 3;
-	public static final PropertyInteger LEVEL = PropertyInteger.create("level", 0, NUM_LEVELS);
-	
-    public BlockCompostBin ()
+
+    public static final int NUM_LEVELS = 3;
+    public static final PropertyInteger LEVEL = PropertyInteger.create("level", 0, NUM_LEVELS);
+
+    public BlockCompostBin()
     {
         this(Material.WOOD);
     }
-    
-    public BlockCompostBin (Material materialIn)
+
+    public BlockCompostBin(Material materialIn)
     {
         super(materialIn);
         setTickRandomly(true);
@@ -49,11 +49,11 @@ public class BlockCompostBin extends BlockContainer
         setResistance(5f);
         setCreativeTab(CreativeTabs.MISC);
         this.setDefaultState(this.blockState.getBaseState().withProperty(LEVEL, Integer.valueOf(0)));
-        
+
         RegistrationHelpers.nameHelper(this, "composter:compost_bin");
     }
-        
-    public static void updateBlockState (World world, BlockPos pos) 
+
+    public static void updateBlockState(World world, BlockPos pos)
     {
         TileEntityCompostBin te = (TileEntityCompostBin) world.getTileEntity(pos);
 
@@ -64,45 +64,42 @@ public class BlockCompostBin extends BlockContainer
 
         te.updateBlockState();
     }
-    
-    public TileEntityCompostBin getTileEntity (IBlockAccess world, BlockPos pos)
+
+    public TileEntityCompostBin getTileEntity(IBlockAccess world, BlockPos pos)
     {
         TileEntity te = world.getTileEntity(pos);
         return ((te != null) && (te instanceof TileEntityCompostBin)) ? (TileEntityCompostBin) te : null;
     }
-    
+
     /*
-    // from
-    // http://www.minecraftforge.net/forum/topic/42458-solved1102-blockstates-crashing/?do=findComment&comment=228689
-    protected BlockStateContainer createBlockState()
-    {
-        return new BlockStateContainer(this, new IProperty[] { FACING });
-    }
-    */
-    
+     * // from // http://www.minecraftforge.net/forum/topic/42458-solved1102-blockstates-crashing/?do=findComment&comment=228689 protected BlockStateContainer createBlockState() {
+     * return new BlockStateContainer(this, new IProperty[] { FACING }); }
+     */
+
     public void setContentsLevel(World worldIn, BlockPos pos, IBlockState state, float amount)
     {
-    	float floatLevel = amount * (float)NUM_LEVELS;
-    	int level = Math.round(floatLevel);
-    	
-    	// make sure at least level 1 if anything is in the block
-    	if (floatLevel > 0.0F)
-    	{
-    		level = Math.max(1, level);
-    	}
-    	
-    	// safety - clamp within range
-    	int chunkedLevel = MathHelper.clamp(level, 0, NUM_LEVELS);
-    	
+        float floatLevel = amount * (float) NUM_LEVELS;
+        int level = Math.round(floatLevel);
+
+        // make sure at least level 1 if anything is in the block
+        if (floatLevel > 0.0F)
+        {
+            level = Math.max(1, level);
+        }
+
+        // safety - clamp within range
+        int chunkedLevel = MathHelper.clamp(level, 0, NUM_LEVELS);
+
         worldIn.setBlockState(pos, state.withProperty(LEVEL, chunkedLevel), 2);
         worldIn.updateComparatorOutputLevel(pos, this);
     }
-    
+
     // ----------------------------------------------------------------------
     // Block
-    
+
     /**
      * Used to determine ambient occlusion and culling when rebuilding chunks for render
+     * 
      * @deprecated call via {@link IBlockState#isOpaqueCube()} whenever possible. Implementing/overriding is fine.
      */
     @Override
@@ -119,25 +116,24 @@ public class BlockCompostBin extends BlockContainer
     {
         return false;
     }
-    
+
     @SideOnly(Side.CLIENT)
     @Override
     public BlockRenderLayer getRenderLayer()
     {
         return BlockRenderLayer.CUTOUT_MIPPED;
-        //return BlockRenderLayer.SOLID;
+        // return BlockRenderLayer.SOLID;
     }
-    
+
     /**
-     * Get the geometry of the queried face at the given position and state. This is used to decide whether things like
-     * buttons are allowed to be placed on the face, or how glass panes connect to the face, among other things.
+     * Get the geometry of the queried face at the given position and state. This is used to decide whether things like buttons are allowed to be placed on the face, or how glass
+     * panes connect to the face, among other things.
      * <p>
-     * Common values are {@code SOLID}, which is the default, and {@code UNDEFINED}, which represents something that
-     * does not fit the other descriptions and will generally cause other things not to connect to the face.
+     * Common values are {@code SOLID}, which is the default, and {@code UNDEFINED}, which represents something that does not fit the other descriptions and will generally cause
+     * other things not to connect to the face.
      * 
      * @return an approximation of the form of the given face
-     * @deprecated call via {@link IBlockState#getBlockFaceShape(IBlockAccess,BlockPos,EnumFacing)} whenever possible.
-     * Implementing/overriding is fine.
+     * @deprecated call via {@link IBlockState#getBlockFaceShape(IBlockAccess,BlockPos,EnumFacing)} whenever possible. Implementing/overriding is fine.
      */
     public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face)
     {
@@ -150,9 +146,9 @@ public class BlockCompostBin extends BlockContainer
             return face == EnumFacing.DOWN ? BlockFaceShape.UNDEFINED : BlockFaceShape.SOLID;
         }
     }
-    
+
     // --- Block state ---
-    
+
     // from
     // http://www.minecraftforge.net/forum/topic/62067-solved-itickable-and-tes-not-ticking/
     @Override
@@ -162,8 +158,7 @@ public class BlockCompostBin extends BlockContainer
     }
 
     /**
-     * @deprecated call via {@link IBlockState#hasComparatorInputOverride()} whenever possible. Implementing/overriding
-     * is fine.
+     * @deprecated call via {@link IBlockState#hasComparatorInputOverride()} whenever possible. Implementing/overriding is fine.
      */
     public boolean hasComparatorInputOverride(IBlockState state)
     {
@@ -171,12 +166,11 @@ public class BlockCompostBin extends BlockContainer
     }
 
     /**
-     * @deprecated call via {@link IBlockState#getComparatorInputOverride(World,BlockPos)} whenever possible.
-     * Implementing/overriding is fine.
+     * @deprecated call via {@link IBlockState#getComparatorInputOverride(World,BlockPos)} whenever possible. Implementing/overriding is fine.
      */
     public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos)
     {
-        return ((Integer)blockState.getValue(LEVEL)).intValue();
+        return ((Integer) blockState.getValue(LEVEL)).intValue();
     }
 
     /**
@@ -192,12 +186,12 @@ public class BlockCompostBin extends BlockContainer
      */
     public int getMetaFromState(IBlockState state)
     {
-        return ((Integer)state.getValue(LEVEL)).intValue();
+        return ((Integer) state.getValue(LEVEL)).intValue();
     }
 
     protected BlockStateContainer createBlockState()
     {
-        return new BlockStateContainer(this, new IProperty[] {LEVEL});
+        return new BlockStateContainer(this, new IProperty[] { LEVEL });
     }
 
     /**
@@ -206,8 +200,8 @@ public class BlockCompostBin extends BlockContainer
     @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack)
     {
-    	super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
-        //worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
+        super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
+        // worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
 
         if (stack.hasDisplayName())
         {
@@ -219,7 +213,7 @@ public class BlockCompostBin extends BlockContainer
             }
         }
     }
-    
+
     /**
      * Called upon block activation (right click on the block.)
      */
@@ -242,7 +236,7 @@ public class BlockCompostBin extends BlockContainer
             }
             else
             {
-            	playerIn.openGui(Composter.instance, ComposterGuiHandler.compostBinGuiID, worldIn, pos.getX(), pos.getY(), pos.getZ());
+                playerIn.openGui(Composter.instance, ComposterGuiHandler.compostBinGuiID, worldIn, pos.getX(), pos.getY(), pos.getZ());
                 return true;
             }
         }
@@ -251,13 +245,13 @@ public class BlockCompostBin extends BlockContainer
             return true;
         }
     }
-    
+
     // ----------------------------------------------------------------------
     // BlockContainer
-    
+
     /**
-     * The type of render function called. MODEL for mixed tesr and static model, MODELBLOCK_ANIMATED for TESR-only,
-     * LIQUID for vanilla liquids, INVISIBLE to skip all rendering
+     * The type of render function called. MODEL for mixed tesr and static model, MODELBLOCK_ANIMATED for TESR-only, LIQUID for vanilla liquids, INVISIBLE to skip all rendering
+     * 
      * @deprecated call via {@link IBlockState#getRenderType()} whenever possible. Implementing/overriding is fine.
      */
     @Override
@@ -276,7 +270,7 @@ public class BlockCompostBin extends BlockContainer
 
         if (tileentity instanceof IInventory)
         {
-            InventoryHelper.dropInventoryItems(worldIn, pos, (IInventory)tileentity);
+            InventoryHelper.dropInventoryItems(worldIn, pos, (IInventory) tileentity);
             worldIn.updateComparatorOutputLevel(pos, this);
         }
 
@@ -287,7 +281,7 @@ public class BlockCompostBin extends BlockContainer
     // ITileEntityProvider
 
     @Override
-    public TileEntity createNewTileEntity (World world, int meta)
+    public TileEntity createNewTileEntity(World world, int meta)
     {
         return new TileEntityCompostBin();
     }

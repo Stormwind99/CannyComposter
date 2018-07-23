@@ -31,19 +31,19 @@ public class ModConfig
 	@Config.Comment("The item that the compost bin generates")
 	public static String compostItem = "composter:compost";
 	
-	@Name("Decomposed items needed")
-	@Config.Comment("The number of decomposed items needed to make one compost unit")
+	@Name("Decomposed units needed")
+	@Config.Comment("The number of compost units needed to make one compost output")
 	@RangeInt(min=1)
-	public static int decomposeNeeded = 8;
+	public static int decomposeUnitsNeeded = 1000;
 	
     @Name("Items")
-    @Config.Comment("Set compost amounts for items.")
+    @Config.Comment("Set compost unit amounts for items.")
     public static Items items = new Items();
 
     public static class Items
     {
         @Name("Compost amount")
-        @Config.Comment("Compost amount, -1 means item doesn't compost")
+        @Config.Comment("Compost unit amount, -1 means item doesn't compost")
         @RangeInt(min = -1)
         public Map<String, Integer> amount = new LinkedHashMap<String, Integer>();
     }
