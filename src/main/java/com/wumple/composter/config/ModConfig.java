@@ -34,7 +34,12 @@ public class ModConfig
 	@Name("Decomposed units needed")
 	@Config.Comment("The number of compost units needed to make one compost output")
 	@RangeInt(min=1)
-	public static int decomposeUnitsNeeded = 1000;
+	public static int binDecomposeUnitsNeeded = 1000;
+	
+	@Name("Compost bin ticks between evaluation")
+	@Config.Comment("Number of ticks between evaluating compost bin contents - lower increases CPU expense")
+	@RangeInt(min=1)
+	public static int binEvaluateTicks = 4;
 	
     @Name("Items")
     @Config.Comment("Set compost unit amounts for items.")

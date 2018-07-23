@@ -85,7 +85,7 @@ public class GuiCompostBin extends GuiContainer
         if (tileCompost.isActive())
         {
             int timeRemaining = tileCompost.getDecomposeTimeRemainingScaled(progressSize);
-            drawTexturedModalRect(halfW + 89, halfH + 34, 176, 0, progressSize - timeRemaining + 1, 16);
+            drawTexturedModalRect(halfW + 89, halfH + 34, 176, 0, timeRemaining, 16);
         }
     }
 

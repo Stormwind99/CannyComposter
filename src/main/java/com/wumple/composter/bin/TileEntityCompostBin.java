@@ -49,6 +49,9 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
 
     // number of units decomposed since last compost generation
     public int binDecomposeProgress = 0;
+    
+    // ticks existed during current session, for visuals
+    long ticksExisted = 0;
 
     private String customName;
     
@@ -67,34 +70,127 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
 
     public boolean isDecomposing()
     {
-        return currentItemProgress > 0;
+        // currentItemSlot should also > NO_SLOT
+        return currentItemDecomposeTime > NO_DECOMPOSE_TIME;
     }
     
     public boolean isActive()
     {
-        return (currentItemProgress > 0) || (binDecomposeProgress > 0) ;
+        return (currentItemSlot > NO_SLOT) || (binDecomposeProgress > NO_DECOMPOSE_TIME) ;
     }
     
     protected int getDecomposeUnitsNeeded()
     {
-    	return ModConfig.decomposeUnitsNeeded;
+    	return ModConfig.binDecomposeUnitsNeeded;
     }
     
     @SideOnly(Side.CLIENT)
     public int getDecomposeTimeRemainingScaled(int scale)
     {
-        if (currentItemDecomposeTime == NO_DECOMPOSE_TIME)
-        {
-            return 0; // currentItemDecomposeTime = DECOMPOSE_TIME_MAX;
-        }
-        
-        double ratio = (double)(currentItemProgress + binDecomposeProgress) / ModConfig.decomposeUnitsNeeded;
+        double ratio = (double)(currentItemProgress + binDecomposeProgress) / ModConfig.binDecomposeUnitsNeeded;
         return (int)(ratio * scale);
+    }
+    
+    /*
+     * Evaluate a tick for this
+     */
+    protected void evaluate()
+    {
+        ticksExisted++;
+        
+        // do faster things always
+        evaluateFast();
+        
+        // only do slower things every so often
+        if ((ticksExisted % ModConfig.binEvaluateTicks) == 0)
+        {
+            evaluateSlow(ModConfig.binEvaluateTicks);
+        }
+    }
+    
+    /*
+     * Evaluate fast things for a tick - visual effects
+     */
+    protected void evaluateFast()
+    {
+        if (!this.getWorld().isRemote)
+        {             
+            checkParticles();
+        }
+    }
+    
+    /*
+     * Evaluate slower things less frequently - ticks have passed
+     */
+    protected void evaluateSlow(int ticks)
+    {
+        boolean isDecomposing = isDecomposing();
 
-        //return (getDecomposeNeeded() - itemDecomposeCount) * scale / COMPOSTING_SLOTS + (binDecomposeTime * scale / (currentItemDecomposeTime * COMPOSTING_SLOTS));
+        boolean shouldUpdate = false;
+
+        if (isDecomposing)
+        {
+            currentItemProgress+=ticks;
+        }
+
+        if (!this.getWorld().isRemote)
+        {             
+            int decompCount = binDecomposeProgress;
+            int filledSlotCount = getFilledSlots();
+            
+            if ( isDecomposing || (filledSlotCount > 0) )
+            {
+                // decompose current item if it is done
+                if (currentItemProgress > currentItemDecomposeTime)
+                {
+                    if (canDecompose())
+                    {
+                        // will forget current item
+                        decomposeItem();
+                        shouldUpdate = true;
+                    }
+                }
+
+                // try to select compostable item if not currently composting one
+                if (currentItemSlot == NO_SLOT)
+                {
+                    // select item if non currently selected
+                    if (!hasOutputItems() || (itemStacks.get(OUTPUT_SLOT).getCount() < STACK_LIMIT) )
+                    {
+                        currentItemSlot = selectRandomFilledSlot();
+                        if (currentItemSlot > NO_SLOT)
+                        {
+                            currentItemDecomposeTime = getItemDecomposeTime(itemStacks.get(currentItemSlot));
+                            // used to set currentItemProgress = 0, but now
+                            // since ticks passed in we save any old ticks
+                        }
+                        else
+                        {
+                            // if no item to compost, we forget any extra units to avoid oddness or possible cheating
+                            currentItemProgress = 0;
+                        }
+    
+                        if (currentItemDecomposeTime > NO_DECOMPOSE_TIME)
+                        {
+                            shouldUpdate = true;
+                        }
+                    }
+                }
+            }
+
+            if (isDecomposing != isDecomposing() || (decompCount != binDecomposeProgress) )
+            {
+                shouldUpdate = true;
+            }
+        }
+
+        if (shouldUpdate)
+        {
+            updateBlockState();
+        }
     }
 
-    private boolean canCompost()
+    private boolean canDecompose()
     {
         if ( (currentItemSlot == NO_SLOT) || (!isItemDecomposable(itemStacks.get(currentItemSlot))) )
         {
@@ -107,48 +203,61 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
         }
         
         ItemStack outputSlotStack = itemStacks.get(OUTPUT_SLOT);
-        ItemStack newStack = getCompostItem(1);
         
-        return SUtil.canStack(outputSlotStack, newStack);
+        // if we assume output slot is empty or already has a valid compost output item,
+        //   then we can avoid we evaluating compost item and allow random selection of compost item creation time
+        //   if a multiple item oreDict name used
+        // Used to:
+        //   ItemStack newStack = getCompostItem(1); 
+        //   return SUtil.canGrow(outputSlotStack, 1);
+        
+        return SUtil.canAddOrGrowCount(outputSlotStack, 1);
     }
     
     protected void forgetCurrentItem()
     {
         currentItemSlot = NO_SLOT;
-        currentItemProgress = NO_DECOMPOSE_TIME;
         currentItemDecomposeTime = NO_DECOMPOSE_TIME;
+        
+        // use to currentItemProgress = NO_DECOMPOSE_TIME;
+        // now we remember extra ticks to apply to next item
     }
     
-    public void compostItem()
+    /*
+     * Decompose current slot's item, and if threshold reached generate compost
+     * 
+     * Preconditions: 
+     *   - current selected slot's item is decomposable
+     *   - output slot is empty or has compost item in it
+     */
+    public void decomposeItem()
     {
-        if (canCompost())
+    	int decomposeUnitsNeeded = getDecomposeUnitsNeeded();
+    	
+        binDecomposeProgress += currentItemDecomposeTime;
+
+        if (binDecomposeProgress >= decomposeUnitsNeeded)
         {
-        	int decomposeUnitsNeeded = getDecomposeUnitsNeeded();
-        	
-            if (binDecomposeProgress < decomposeUnitsNeeded)
+            if (!hasOutputItems())
             {
-                binDecomposeProgress+=currentItemDecomposeTime;
+            	ItemStack resultStack = getCompostItem(1);
+                itemStacks.set(OUTPUT_SLOT, resultStack);
+            }
+            else
+            {
+                itemStacks.get(OUTPUT_SLOT).grow(1);
             }
 
-            if (binDecomposeProgress >= decomposeUnitsNeeded)
-            {
-                if (!hasOutputItems())
-                {
-                	ItemStack resultStack = getCompostItem(1);
-                    itemStacks.set(OUTPUT_SLOT, resultStack);
-                }
-                else
-                {
-                    itemStacks.get(OUTPUT_SLOT).grow(1);
-                }
-
-                binDecomposeProgress -= decomposeUnitsNeeded;
-            }
-
-            SUtil.shrink(itemStacks, currentItemSlot, 1);
-
-            forgetCurrentItem();
+            binDecomposeProgress -= decomposeUnitsNeeded;
         }
+
+        SUtil.shrink(itemStacks, currentItemSlot, 1);
+        
+        // remember any extra ticks for next item
+        currentItemProgress -= currentItemDecomposeTime;
+
+        // forget current slot so another can be selected
+        forgetCurrentItem();
     }
     
     protected int getFilledSlots()
@@ -279,7 +388,7 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     protected void checkParticles()
     {
     	// show some steam particles when composting
-    	if (isDecomposing() && (currentItemProgress % PARTICLE_INTERVAL == 0))
+    	if (isDecomposing() && (ticksExisted % PARTICLE_INTERVAL == 0))
     	{
     		float ratio = getFilledRatio();
     		double x = (double)pos.getX() + 0.5D;
@@ -389,60 +498,10 @@ public class TileEntityCompostBin extends TileEntity implements IInventory, ITic
     // ----------------------------------------------------------------------
     // ITickable
     
+    @Override
     public void update()
     {
-        boolean isDecomposing = isDecomposing();
-
-        boolean shouldUpdate = false;
-
-        if (isDecomposing)
-        {
-            currentItemProgress++;            
-        }
-
-        if (!this.getWorld().isRemote)
-        {             
-        	checkParticles();
-
-            int decompCount = binDecomposeProgress;
-            int filledSlotCount = getFilledSlots();
-
-            if ( isDecomposing || (filledSlotCount > 0) )
-            {
-                if (currentItemProgress > currentItemDecomposeTime)
-                {
-                    if (canCompost())
-                    {
-                        compostItem();
-                        shouldUpdate = true;
-                    }
-
-                    forgetCurrentItem();
-                    currentItemSlot = selectRandomFilledSlot();
-
-                    if ( (currentItemSlot >= 0) && (!hasOutputItems() || itemStacks.get(OUTPUT_SLOT).getCount() < STACK_LIMIT) )
-                    {
-                        currentItemDecomposeTime = getItemDecomposeTime(itemStacks.get(currentItemSlot));
-                        currentItemProgress = 0;
-
-                        if (currentItemDecomposeTime > NO_DECOMPOSE_TIME)
-                        {
-                            shouldUpdate = true;
-                        }
-                    }
-                }
-            }
-
-            if (isDecomposing != isDecomposing() || (decompCount != binDecomposeProgress) )
-            {
-                shouldUpdate = true;
-            }
-        }
-
-        if (shouldUpdate)
-        {
-        	updateBlockState();
-        }
+        evaluate();
     }
     
     // ----------------------------------------------------------------------
