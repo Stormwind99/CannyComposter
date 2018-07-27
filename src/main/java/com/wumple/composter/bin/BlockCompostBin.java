@@ -2,11 +2,11 @@ package com.wumple.composter.bin;
 
 import com.wumple.composter.Composter;
 import com.wumple.util.misc.RegistrationHelpers;
+import com.wumple.util.misc.Util;
 
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -22,7 +22,6 @@ import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -32,9 +31,6 @@ public class BlockCompostBin extends BlockContainer
 {
     // ----------------------------------------------------------------------
     // BlockCompostBin
-
-    public static final int NUM_LEVELS = 3;
-    public static final PropertyInteger LEVEL = PropertyInteger.create("level", 0, NUM_LEVELS);
 
     public BlockCompostBin()
     {
@@ -48,50 +44,9 @@ public class BlockCompostBin extends BlockContainer
         setHardness(1.5f);
         setResistance(5f);
         setCreativeTab(CreativeTabs.MISC);
-        this.setDefaultState(this.blockState.getBaseState().withProperty(LEVEL, Integer.valueOf(0)));
+        this.setDefaultState(this.blockState.getBaseState().withProperty(CompostBinCap.LEVEL, Integer.valueOf(0)));
 
         RegistrationHelpers.nameHelper(this, "composter:compost_bin");
-    }
-
-    public static void updateBlockState(World world, BlockPos pos)
-    {
-        TileEntityCompostBin te = (TileEntityCompostBin) world.getTileEntity(pos);
-
-        if (te == null)
-        {
-            return;
-        }
-
-        te.updateBlockState();
-    }
-
-    public TileEntityCompostBin getTileEntity(IBlockAccess world, BlockPos pos)
-    {
-        TileEntity te = world.getTileEntity(pos);
-        return ((te != null) && (te instanceof TileEntityCompostBin)) ? (TileEntityCompostBin) te : null;
-    }
-
-    /*
-     * // from // http://www.minecraftforge.net/forum/topic/42458-solved1102-blockstates-crashing/?do=findComment&comment=228689 protected BlockStateContainer createBlockState() {
-     * return new BlockStateContainer(this, new IProperty[] { FACING }); }
-     */
-
-    public void setContentsLevel(World worldIn, BlockPos pos, IBlockState state, float amount)
-    {
-        float floatLevel = amount * (float) NUM_LEVELS;
-        int level = Math.round(floatLevel);
-
-        // make sure at least level 1 if anything is in the block
-        if (floatLevel > 0.0F)
-        {
-            level = Math.max(1, level);
-        }
-
-        // safety - clamp within range
-        int chunkedLevel = MathHelper.clamp(level, 0, NUM_LEVELS);
-
-        worldIn.setBlockState(pos, state.withProperty(LEVEL, chunkedLevel), 2);
-        worldIn.updateComparatorOutputLevel(pos, this);
     }
 
     // ----------------------------------------------------------------------
@@ -170,7 +125,7 @@ public class BlockCompostBin extends BlockContainer
      */
     public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos)
     {
-        return ((Integer) blockState.getValue(LEVEL)).intValue();
+        return ((Integer) blockState.getValue(CompostBinCap.LEVEL)).intValue();
     }
 
     /**
@@ -178,7 +133,7 @@ public class BlockCompostBin extends BlockContainer
      */
     public IBlockState getStateFromMeta(int meta)
     {
-        return this.getDefaultState().withProperty(LEVEL, Integer.valueOf(meta));
+        return this.getDefaultState().withProperty(CompostBinCap.LEVEL, Integer.valueOf(meta));
     }
 
     /**
@@ -186,12 +141,12 @@ public class BlockCompostBin extends BlockContainer
      */
     public int getMetaFromState(IBlockState state)
     {
-        return ((Integer) state.getValue(LEVEL)).intValue();
+        return ((Integer) state.getValue(CompostBinCap.LEVEL)).intValue();
     }
 
     protected BlockStateContainer createBlockState()
     {
-        return new BlockStateContainer(this, new IProperty[] { LEVEL });
+        return new BlockStateContainer(this, new IProperty[] { CompostBinCap.LEVEL });
     }
 
     /**
@@ -203,6 +158,7 @@ public class BlockCompostBin extends BlockContainer
         super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
         // worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
 
+        /*
         if (stack.hasDisplayName())
         {
             TileEntity tileentity = worldIn.getTileEntity(pos);
@@ -212,8 +168,20 @@ public class BlockCompostBin extends BlockContainer
                 ((TileEntityCompostBin) tileentity).setName(stack.getDisplayName());
             }
         }
+        */
     }
 
+    protected IInventory getInventory(World worldIn, BlockPos pos)
+    {
+        TileEntity tileentity = worldIn.getTileEntity(pos);
+        IInventory iinventory = Util.as(tileentity, IInventory.class);
+        if (iinventory == null)
+        {
+            iinventory = ICompostBinCap.getCap(tileentity);
+        }
+        return iinventory;
+    }
+    
     /**
      * Called upon block activation (right click on the block.)
      */
@@ -221,8 +189,7 @@ public class BlockCompostBin extends BlockContainer
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn,
             EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
     {
-        TileEntity tileentity = worldIn.getTileEntity(pos);
-        IInventory iinventory = (TileEntityCompostBin) tileentity;
+        IInventory iinventory = getInventory(worldIn, pos);
 
         if (iinventory != null)
         {
@@ -266,11 +233,11 @@ public class BlockCompostBin extends BlockContainer
     @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state)
     {
-        TileEntity tileentity = worldIn.getTileEntity(pos);
+        IInventory inventory = getInventory(worldIn, pos);
 
-        if (tileentity instanceof IInventory)
+        if (inventory != null)
         {
-            InventoryHelper.dropInventoryItems(worldIn, pos, (IInventory) tileentity);
+            InventoryHelper.dropInventoryItems(worldIn, pos, inventory);
             worldIn.updateComparatorOutputLevel(pos, this);
         }
 

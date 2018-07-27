@@ -1,5 +1,7 @@
 package com.wumple.composter.bin;
 
+import com.wumple.util.capability.CapabilityUtils;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -14,20 +16,16 @@ public class ComposterGuiHandler implements IGuiHandler
     public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z)
     {
         TileEntity tileEntity = world.getTileEntity(new BlockPos(x, y, z));
-        if (tileEntity instanceof TileEntityCompostBin)
-            return new ContainerCompostBin(player.inventory, (TileEntityCompostBin) tileEntity);
-
-        return null;
+        ICompostBinCap cap = CapabilityUtils.fetchCapability(tileEntity, CompostBinCap.CAPABILITY, CompostBinCap.DEFAULT_FACING);
+        return (cap != null) ? new ContainerCompostBin(player.inventory, cap) : null;
     }
 
     @Override
     public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z)
     {
         TileEntity tileEntity = world.getTileEntity(new BlockPos(x, y, z));
-        if (tileEntity instanceof TileEntityCompostBin)
-            return new GuiCompostBin(player.inventory, (TileEntityCompostBin) tileEntity);
-
-        return null;
+        ICompostBinCap cap = CapabilityUtils.fetchCapability(tileEntity, CompostBinCap.CAPABILITY, CompostBinCap.DEFAULT_FACING);
+        return (cap != null) ? new GuiCompostBin(player.inventory, cap) : null;
     }
 
 }

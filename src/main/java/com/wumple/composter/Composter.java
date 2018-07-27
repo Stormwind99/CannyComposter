@@ -3,14 +3,15 @@ package com.wumple.composter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.wumple.composter.bin.CompostBinCap;
+import com.wumple.composter.config.ConfigHandler;
+
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLFingerprintViolationEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-
-import com.wumple.composter.config.ConfigHandler;
 
 @Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.MOD_VERSION, dependencies = Reference.DEPENDENCIES, updateJSON = Reference.UPDATEJSON, certificateFingerprint=Reference.FINGERPRINT)
 public class Composter
@@ -24,6 +25,8 @@ public class Composter
     public void preInit(FMLPreInitializationEvent event)
     {
         logger = event.getModLog();
+        
+        CompostBinCap.register();
     }
 
     @EventHandler

@@ -9,11 +9,11 @@ import net.minecraft.util.ResourceLocation;
 public class GuiCompostBin extends GuiContainer
 {
     private static final ResourceLocation compostBinGuiTextures = new ResourceLocation("composter", "textures/gui/compost_bin.png");
-    private TileEntityCompostBin tileCompost;
+    private ICompostBinCap tileCompost;
 
     //private Slot hoveredSlot;
 
-    public GuiCompostBin (InventoryPlayer inventory, TileEntityCompostBin tileEntity)
+    public GuiCompostBin (InventoryPlayer inventory, ICompostBinCap tileEntity)
     {
         super(new ContainerCompostBin(inventory, tileEntity));
         tileCompost = tileEntity;

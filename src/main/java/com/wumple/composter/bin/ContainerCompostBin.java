@@ -18,17 +18,14 @@ public class ContainerCompostBin extends Container
     private static final int InventoryY = 84;
     private static final int HotbarY = 142;
 
-    private TileEntityCompostBin tileCompost;
-    private int lastDecompTime;
-    private int lastItemDecompTime;
-    private int lastDecompUnits;
+    private ICompostBinCap tileCompost;
 
     private Slot outputSlot;
     private List<Slot> compostSlots;
     private List<Slot> playerSlots;
     private List<Slot> hotbarSlots;
 
-    public ContainerCompostBin(InventoryPlayer inventory, TileEntityCompostBin tileEntity)
+    public ContainerCompostBin(InventoryPlayer inventory, ICompostBinCap tileEntity)
     {
         tileCompost = tileEntity;
 
@@ -72,32 +69,14 @@ public class ContainerCompostBin extends Container
     public void detectAndSendChanges()
     {
         super.detectAndSendChanges();
-
-        for (IContainerListener icontainerlistener : listeners)
-        {
-            if (lastDecompTime != tileCompost.getCurrentItemProgress())
-                icontainerlistener.sendWindowProperty(this, 0, tileCompost.getCurrentItemProgress());
-            if (lastItemDecompTime != tileCompost.getCurrentItemDecompTime())
-                icontainerlistener.sendWindowProperty(this, 1, tileCompost.getCurrentItemDecompTime());
-            if (lastDecompUnits != tileCompost.binDecomposeProgress)
-                icontainerlistener.sendWindowProperty(this, 2, tileCompost.binDecomposeProgress);
-        }
-
-        lastDecompTime = tileCompost.getCurrentItemProgress();
-        lastItemDecompTime = tileCompost.getCurrentItemDecompTime();
-        lastDecompUnits = tileCompost.binDecomposeProgress;
-    }
+        tileCompost.detectAndSendChanges(this, listeners);
+    }    
 
     @SideOnly(Side.CLIENT)
     @Override
     public void updateProgressBar(int id, int value)
     {
-        if (id == 0)
-            tileCompost.currentItemProgress = value;
-        if (id == 1)
-            tileCompost.currentItemDecomposeTime = value;
-        if (id == 2)
-            tileCompost.binDecomposeProgress = value;
+        tileCompost.updateProgressBar(id, value);
     }
 
     @Override
@@ -134,13 +113,13 @@ public class ContainerCompostBin extends Container
                 }
 
                 slot.onSlotChange(slotStack, itemStack);
-                BlockCompostBin.updateBlockState(tileCompost.getWorld(), tileCompost.getPos());
+                tileCompost.updateBlockState();
             }
 
             // Try merge stacks within inventory and hotbar spaces
             else if (slotIndex >= inventoryStart && slotIndex < hotbarEnd)
             {
-                if (!TileEntityCompostBin.isItemDecomposable(slotStack)
+                if (!CompostBinCap.isItemDecomposable(slotStack)
                         || !mergeItemStack(slotStack, compostStart, compostEnd, false))
                 {
                     if (slotIndex >= inventoryStart && slotIndex < hotbarStart)
@@ -184,4 +163,18 @@ public class ContainerCompostBin extends Container
 
         return itemStack;
     }
+    
+    /*
+    public void updateBlockState(World world, BlockPos pos)
+    {
+        TileEntityCompostBin te = Util.as(world.getTileEntity(pos), TileEntityCompostBin.class);
+
+        if (te == null)
+        {
+            return;
+        }
+
+        te.updateBlockState();
+    }
+    */
 }

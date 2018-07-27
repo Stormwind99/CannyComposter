@@ -1,7 +1,7 @@
 package com.wumple.composter.config;
 
 import com.wumple.composter.Reference;
-import com.wumple.composter.bin.TileEntityCompostBin;
+import com.wumple.composter.bin.CompostBinCap;
 import com.wumple.util.config.MatchingConfig;
 
 import net.minecraft.init.Items;
@@ -10,7 +10,7 @@ import net.minecraftforge.common.config.ConfigManager;
 
 public class ConfigHandler
 {
-	public static final MatchingConfig<Integer> compostAmounts = new MatchingConfig<Integer>(ModConfig.items.amount, TileEntityCompostBin.NO_DECOMPOSE_TIME);
+	public static final MatchingConfig<Integer> compostAmounts = new MatchingConfig<Integer>(ModConfig.items.amount, CompostBinCap.NO_DECOMPOSE_TIME);
 	
 	public static void init()
 	{
