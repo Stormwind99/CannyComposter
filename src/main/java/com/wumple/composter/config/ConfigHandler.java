@@ -1,7 +1,7 @@
 package com.wumple.composter.config;
 
 import com.wumple.composter.Reference;
-import com.wumple.composter.bin.CompostBinCap;
+import com.wumple.composter.capability.CompostBinCap;
 import com.wumple.util.config.MatchingConfig;
 
 import net.minecraft.init.Items;

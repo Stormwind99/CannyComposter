@@ -1,10 +1,12 @@
-package com.wumple.composter.bin;
+package com.wumple.composter.capability;
 
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import com.wumple.composter.Composter;
 import com.wumple.composter.Reference;
+import com.wumple.composter.capability.container.ComposterGuiHandler;
 import com.wumple.composter.config.ConfigHandler;
 import com.wumple.composter.config.ModConfig;
 import com.wumple.util.adapter.IThing;
@@ -21,10 +23,12 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.NonNullList;
@@ -32,15 +36,13 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.world.IWorldNameable;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.Capability.IStorage;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.wrapper.InvWrapper;
 
@@ -87,10 +89,8 @@ public class CompostBinCap /*extends TileEntity*/ extends TickingThingCap<IThing
     // ticks existed during current session, for visuals
     long ticksExisted = 0;
 
-    private String customName;
-    
     // ----------------------------------------------------------------------
-    // TileEntityCompostBin
+    // CompostBinCap
     
     public int getCurrentItemProgress()
     {
@@ -104,28 +104,338 @@ public class CompostBinCap /*extends TileEntity*/ extends TickingThingCap<IThing
 
     public boolean isDecomposing()
     {
-        // currentItemSlot should also > NO_SLOT
-        return currentItemDecomposeTime > NO_DECOMPOSE_TIME;
-    }
-    
-    public boolean isActive()
-    {
-        return (currentItemSlot > NO_SLOT) || (binDecomposeProgress > NO_DECOMPOSE_TIME) ;
+        return (currentItemDecomposeTime > NO_DECOMPOSE_TIME) && (currentItemSlot > NO_SLOT);
     }
     
     protected int getDecomposeUnitsNeeded()
     {
     	return ModConfig.binDecomposeUnitsNeeded;
     }
+        
+    private boolean canDecompose()
+    {
+        if ( (currentItemSlot == NO_SLOT) || !isItemDecomposable(itemStacks.get(currentItemSlot)) )
+        {
+            return false;
+        }
+
+        if (!hasOutputItems())
+        {
+            return true;
+        }
+        
+        ItemStack outputSlotStack = itemStacks.get(OUTPUT_SLOT);
+        
+        // if we assume output slot is empty or already has a valid compost output item,
+        //   then we can avoid we evaluating compost item and allow random selection of compost item creation time
+        //   if a multiple item oreDict name used
+        // Used to:
+        //   ItemStack newStack = getCompostItem(1); 
+        //   return SUtil.canGrow(outputSlotStack, 1);
+        
+        return SUtil.canAddOrGrowCount(outputSlotStack, 1);
+    }
     
-    @SideOnly(Side.CLIENT)
+    protected void forgetCurrentItem()
+    {
+        currentItemSlot = NO_SLOT;
+        currentItemDecomposeTime = NO_DECOMPOSE_TIME;
+        
+        // use to currentItemProgress = NO_DECOMPOSE_TIME;
+        // now we remember extra ticks to apply to next item
+    }
+    
+    /*
+     * Decompose current slot's item, and if threshold reached generate compost
+     * 
+     * Preconditions: 
+     *   - current selected slot's item is decomposable
+     *   - output slot is empty or has compost item in it
+     */
+    public void decomposeItem()
+    {
+        int decomposeUnitsNeeded = getDecomposeUnitsNeeded();
+        
+        binDecomposeProgress += currentItemDecomposeTime;
+
+        if (binDecomposeProgress >= decomposeUnitsNeeded)
+        {
+            if (!hasOutputItems())
+            {
+                ItemStack resultStack = getCompostItem(1);
+                itemStacks.set(OUTPUT_SLOT, resultStack);
+            }
+            else
+            {
+                itemStacks.get(OUTPUT_SLOT).grow(1);
+            }
+
+            binDecomposeProgress -= decomposeUnitsNeeded;
+        }
+
+        SUtil.shrink(itemStacks, currentItemSlot, 1);
+        
+        // remember any extra ticks for next item
+        currentItemProgress -= currentItemDecomposeTime;
+
+        // forget current slot so another can be selected
+        forgetCurrentItem();
+    }
+    
+    protected int getFilledSlots()
+    {
+        int filledSlotCount = 0;
+        for (int i = 0; i < COMPOSTING_SLOTS; i++)
+        {
+            // MAYBE assume all itemstacks that made it into compost bin are compostable
+            // reduces expense by eliminating config lookup on itemstack
+            filledSlotCount += (isItemDecomposable(itemStacks.get(i))) ? 1 : 0;
+        }
+
+        return filledSlotCount;
+    }
+
+    public boolean hasInputItems()
+    {
+        return getFilledSlots() > 0;
+    }
+
+    public boolean hasOutputItems()
+    {
+        return !SUtil.isEmpty(itemStacks.get(OUTPUT_SLOT));
+    }
+
+    private int selectRandomFilledSlot()
+    {
+        int filledSlotCount = getFilledSlots();
+     
+        if (filledSlotCount == 0)
+        {
+            return NO_SLOT;
+        }
+
+        int index = getWorld().rand.nextInt(filledSlotCount);
+        for (int i = 0, c = 0; i < COMPOSTING_SLOTS; i++)
+        {
+            if (isItemDecomposable(itemStacks.get(i)))
+            {
+                if (c++ == index)
+                {
+                    return i;
+                }
+            }
+        }
+
+        return NO_SLOT;
+    }
+
+    public static int getItemDecomposeTime(ItemStack itemStack)
+    {
+        if (SUtil.isEmpty(itemStack))
+        {
+            return NO_DECOMPOSE_TIME;
+        }
+
+        int amount = ConfigHandler.compostAmounts.getValue(itemStack);
+        
+        return amount;
+    }
+
+    public static boolean isItemDecomposable(ItemStack itemStack)
+    {
+        return getItemDecomposeTime(itemStack) > NO_DECOMPOSE_TIME;
+    }
+
+    public boolean isEmpty()
+    {
+        for (ItemStack itemstack : this.itemStacks)
+        {
+            if (!SUtil.isEmpty(itemstack))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+       
+    public float getFilledRatio()
+    {
+        int slots = getFilledSlots() + (hasOutputItems() ? 1 : 0);
+        return (float)slots / (float) TOTAL_SLOTS;
+    }
+    
+    protected World getWorld()
+    {
+        return owner.getWorld();
+    }
+    
+    protected BlockPos getPos()
+    {
+        return owner.getPos();
+    }
+    
+    protected void updateInternalState(int index)
+    {
+        if (index == OUTPUT_SLOT)
+        {
+            updateBlockState();
+        }  
+        else if ((index == currentItemSlot) && !isItemDecomposable(itemStacks.get(index)) )
+        {
+            forgetCurrentItem();
+            updateBlockState();
+        }
+    }
+    
+    protected ItemStack getCompostItem(int count)
+    {
+        TypeIdentifier cid = new TypeIdentifier(ModConfig.compostItem);
+        return cid.create(count);
+    }
+    
+    // ----------------------------------------------------------------------
+    /// For Block appearance
+    
+    public static final int NUM_LEVELS = 3;
+    public static final PropertyInteger LEVEL = PropertyInteger.create("level", 0, NUM_LEVELS);
+    
+    public void setContentsLevel(World worldIn)
+    {
+        BlockPos pos = this.getPos();
+        
+        IBlockState state = worldIn.getBlockState(pos);
+        Block block = state.getBlock();
+        float amount = getFilledRatio();
+        
+        float floatLevel = amount * (float) NUM_LEVELS;
+        int level = Math.round(floatLevel);
+
+        // make sure at least level 1 if anything is in the block
+        if (floatLevel > 0.0F)
+        {
+            level = Math.max(1, level);
+        }
+
+        // safety - clamp within range
+        int chunkedLevel = MathHelper.clamp(level, 0, NUM_LEVELS);
+
+        worldIn.setBlockState(pos, state.withProperty(LEVEL, chunkedLevel), 2);
+        worldIn.updateComparatorOutputLevel(pos, block);
+    }
+
+    protected void checkParticles()
+    {
+        // show some steam particles when composting
+        if (isDecomposing() && (ticksExisted % PARTICLE_INTERVAL == 0))
+        {
+            float ratio = getFilledRatio();
+            BlockPos pos = getPos();
+            double x = (double)pos.getX() + 0.5D;
+            // try to align y source of particles to soil level in bin
+            double y = (double)pos.getY() + 0.5D + (0.5D * ratio);
+            double z = (double)pos.getZ() + 0.5D;
+            // more particles the more full the bin is
+            int num = 1 + Math.round(ratio); 
+            // pre-existing particle fx candidates: cloud, spit, poof (explode), townaura, snowballpoof, smoke, large_smoke, firework, falling_dust
+            ((WorldServer)this.getWorld()).spawnParticle(EnumParticleTypes.EXPLOSION_NORMAL, x, y, z, num, 0.2D, 0.0D, 0.2D, 0.0D);
+        }
+    }
+    
+    // ----------------------------------------------------------------------
+    /// ICompostBinCap
+    
+    @Override
     public int getDecomposeTimeRemainingScaled(int scale)
     {
         double ratio = (double)(currentItemProgress + binDecomposeProgress) / ModConfig.binDecomposeUnitsNeeded;
         return (int)(ratio * scale);
     }
     
-    /// ICompostBinCap
+    @Override
+    public boolean isActive()
+    {
+        return (currentItemSlot > NO_SLOT) || (binDecomposeProgress > NO_DECOMPOSE_TIME) ;
+    }
+    
+    @Override
+    public void updateBlockState()
+    {
+        World world = getWorld();
+        
+        if (!world.isRemote)
+        {
+            setContentsLevel(world);
+        }
+        
+        markDirty();
+    }
+    
+    @Override
+    public NBTBase serializeNBT()
+    {
+        NBTTagCompound compound = new NBTTagCompound();
+
+        compound.setInteger("decompItemProgress", currentItemProgress);
+        compound.setByte("decompBinSlot", (byte)currentItemSlot);
+        compound.setInteger("decompBinProgress", binDecomposeProgress);
+
+        ItemStackHelper.saveAllItems(compound, itemStacks);
+ 
+        return compound;
+    }
+    
+    @Override
+    public void deserializeNBT(NBTBase nbt)
+    {
+        NBTTagCompound compound = Util.as(nbt, NBTTagCompound.class);                
+        
+        if (compound == null) { return; } 
+        
+        ItemStackHelper.loadAllItems(compound, itemStacks);
+
+        currentItemProgress = compound.getInteger("decompItemProgress");
+        currentItemSlot = compound.getByte("decompBinSlot");
+        binDecomposeProgress = compound.getInteger("decompBinProgress");
+        currentItemDecomposeTime = (currentItemSlot >= 0) ? getItemDecomposeTime(itemStacks.get(currentItemSlot)) : 0;
+    }
+
+    // ----------------------------------------------------------------------
+    /// Event handling via CompostBinHandler
+
+    @Override 
+    public void onBlockBreak(World worldIn, BlockPos pos)
+    {
+        InventoryHelper.dropInventoryItems(worldIn, pos, this);
+        worldIn.updateComparatorOutputLevel(pos, worldIn.getBlockState(pos).getBlock());
+    }
+    
+    @Override
+    public void onRightBlockClicked(PlayerInteractEvent.RightClickBlock event)
+    {
+        World worldIn = event.getWorld();
+        BlockPos pos = event.getPos();
+        EntityPlayer playerIn = event.getEntityPlayer();
+        
+       if (worldIn.getBlockState(pos.up()).doesSideBlockChestOpening(worldIn, pos.up(), EnumFacing.DOWN))
+       {
+           event.setCancellationResult(EnumActionResult.FAIL);
+           event.setCanceled(true);
+       }
+       else if (worldIn.isRemote)
+       {
+           event.setCanceled(true);
+       }
+       else
+       {
+           playerIn.openGui(Composter.instance, ComposterGuiHandler.compostBinGuiID, worldIn, pos.getX(), pos.getY(), pos.getZ());
+           event.setCanceled(true);
+           event.setCancellationResult(EnumActionResult.SUCCESS);
+       }
+    }
+
+    // ----------------------------------------------------------------------
+    /// Container via ICompostBinCap
     
     private int lastDecompTime;
     private int lastItemDecompTime;
@@ -160,6 +470,7 @@ public class CompostBinCap /*extends TileEntity*/ extends TickingThingCap<IThing
             binDecomposeProgress = value;        
     }
     
+    // ----------------------------------------------------------------------
     /// ITickingThing
     
     @Override
@@ -257,336 +568,9 @@ public class CompostBinCap /*extends TileEntity*/ extends TickingThingCap<IThing
             updateBlockState();
         }
     }
-
-    private boolean canDecompose()
-    {
-        if ( (currentItemSlot == NO_SLOT) || (!isItemDecomposable(itemStacks.get(currentItemSlot))) )
-        {
-        	return false;
-        }
-
-        if (!hasOutputItems())
-        {
-            return true;
-        }
-        
-        ItemStack outputSlotStack = itemStacks.get(OUTPUT_SLOT);
-        
-        // if we assume output slot is empty or already has a valid compost output item,
-        //   then we can avoid we evaluating compost item and allow random selection of compost item creation time
-        //   if a multiple item oreDict name used
-        // Used to:
-        //   ItemStack newStack = getCompostItem(1); 
-        //   return SUtil.canGrow(outputSlotStack, 1);
-        
-        return SUtil.canAddOrGrowCount(outputSlotStack, 1);
-    }
-    
-    protected void forgetCurrentItem()
-    {
-        currentItemSlot = NO_SLOT;
-        currentItemDecomposeTime = NO_DECOMPOSE_TIME;
-        
-        // use to currentItemProgress = NO_DECOMPOSE_TIME;
-        // now we remember extra ticks to apply to next item
-    }
-    
-    /*
-     * Decompose current slot's item, and if threshold reached generate compost
-     * 
-     * Preconditions: 
-     *   - current selected slot's item is decomposable
-     *   - output slot is empty or has compost item in it
-     */
-    public void decomposeItem()
-    {
-    	int decomposeUnitsNeeded = getDecomposeUnitsNeeded();
-    	
-        binDecomposeProgress += currentItemDecomposeTime;
-
-        if (binDecomposeProgress >= decomposeUnitsNeeded)
-        {
-            if (!hasOutputItems())
-            {
-            	ItemStack resultStack = getCompostItem(1);
-                itemStacks.set(OUTPUT_SLOT, resultStack);
-            }
-            else
-            {
-                itemStacks.get(OUTPUT_SLOT).grow(1);
-            }
-
-            binDecomposeProgress -= decomposeUnitsNeeded;
-        }
-
-        SUtil.shrink(itemStacks, currentItemSlot, 1);
-        
-        // remember any extra ticks for next item
-        currentItemProgress -= currentItemDecomposeTime;
-
-        // forget current slot so another can be selected
-        forgetCurrentItem();
-    }
-    
-    protected int getFilledSlots()
-    {
-        int filledSlotCount = 0;
-        for (int i = 0; i < COMPOSTING_SLOTS; i++)
-        {
-            filledSlotCount += (isItemDecomposable(itemStacks.get(i))) ? 1 : 0;
-        }
-
-        return filledSlotCount;
-    }
-
-    public boolean hasInputItems()
-    {
-        return getFilledSlots() > 0;
-    }
-
-    public boolean hasOutputItems()
-    {
-        return !SUtil.isEmpty(itemStacks.get(OUTPUT_SLOT));
-    }
-
-    private int selectRandomFilledSlot()
-    {
-        int filledSlotCount = getFilledSlots();
-     
-        if (filledSlotCount == 0)
-        {
-            return NO_SLOT;
-        }
-
-        int index = getWorld().rand.nextInt(filledSlotCount);
-        for (int i = 0, c = 0; i < COMPOSTING_SLOTS; i++)
-        {
-            if (isItemDecomposable(itemStacks.get(i)))
-            {
-                if (c++ == index)
-                {
-                    return i;
-                }
-            }
-        }
-
-        return NO_SLOT;
-    }
-
-    public static int getItemDecomposeTime(ItemStack itemStack)
-    {
-        if (SUtil.isEmpty(itemStack))
-        {
-            return NO_DECOMPOSE_TIME;
-        }
-
-        int amount = ConfigHandler.compostAmounts.getValue(itemStack);
-        
-        return amount;
-    }
-
-    public static boolean isItemDecomposable(ItemStack itemStack)
-    {
-        return getItemDecomposeTime(itemStack) > NO_DECOMPOSE_TIME;
-    }
-
-    public boolean isEmpty()
-    {
-        for (ItemStack itemstack : this.itemStacks)
-        {
-            if (!SUtil.isEmpty(itemstack))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-    
-    public void setName(String name)
-    {
-        this.customName = name;
-    }
-    
-    public String getRealName()
-    {
-    	return "container.composter.compost_bin";
-    }
-    
-    public float getFilledRatio()
-    {
-		int slots = getFilledSlots() + (hasOutputItems() ? 1 : 0);
-    	return (float)slots / (float) TOTAL_SLOTS;
-    }
-    
-    protected World getWorld()
-    {
-        return owner.getWorld();
-    }
-    
-    protected BlockPos getPos()
-    {
-        return owner.getPos();
-    }
-    
-    @Override
-    public void updateBlockState()
-    {
-    	World world = getWorld();
-    	
-    	if (!world.isRemote)
-    	{
-    	    setContentsLevel(world);
-    	}
-    	
-        markDirty();
-    }
-    
-    public static final int NUM_LEVELS = 3;
-    public static final PropertyInteger LEVEL = PropertyInteger.create("level", 0, NUM_LEVELS);
-    
-    public void setContentsLevel(World worldIn)
-    {
-        BlockPos pos = this.getPos();
-        
-        IBlockState state = worldIn.getBlockState(pos);
-        Block block = state.getBlock();
-        float amount = getFilledRatio();
-        
-        float floatLevel = amount * (float) NUM_LEVELS;
-        int level = Math.round(floatLevel);
-
-        // make sure at least level 1 if anything is in the block
-        if (floatLevel > 0.0F)
-        {
-            level = Math.max(1, level);
-        }
-
-        // safety - clamp within range
-        int chunkedLevel = MathHelper.clamp(level, 0, NUM_LEVELS);
-
-        worldIn.setBlockState(pos, state.withProperty(LEVEL, chunkedLevel), 2);
-        worldIn.updateComparatorOutputLevel(pos, block);
-    }
-
-    protected void updateInternalState(int index)
-    {
-        if (index == OUTPUT_SLOT)
-        {
-            updateBlockState();
-        }  
-        else if ((index == currentItemSlot) && !isItemDecomposable(itemStacks.get(index)) )
-        {
-            forgetCurrentItem();
-            updateBlockState();
-        }
-    }
-    
-    protected void checkParticles()
-    {
-    	// show some steam particles when composting
-    	if (isDecomposing() && (ticksExisted % PARTICLE_INTERVAL == 0))
-    	{
-    		float ratio = getFilledRatio();
-    		BlockPos pos = getPos();
-    		double x = (double)pos.getX() + 0.5D;
-    		// try to align y source of particles to soil level in bin
-    		double y = (double)pos.getY() + 0.5D + (0.5D * ratio);
-    		double z = (double)pos.getZ() + 0.5D;
-    		// more particles the more full the bin is
-    		int num = 1 + Math.round(ratio); 
-    		// pre-existing particle fx candidates: cloud, spit, poof (explode), townaura, snowballpoof, smoke, large_smoke, firework, falling_dust
-        	((WorldServer)this.getWorld()).spawnParticle(EnumParticleTypes.EXPLOSION_NORMAL, x, y, z, num, 0.2D, 0.0D, 0.2D, 0.0D);
-    	}
-    }
-    
-    protected ItemStack getCompostItem(int count)
-    {
-    	TypeIdentifier cid = new TypeIdentifier(ModConfig.compostItem);
-    	return cid.create(count);
-    }
-    
-    public NBTBase writeNBT(NBTTagCompound compound)
-    {
-        compound.setInteger("decompItemProgress", currentItemProgress);
-        compound.setByte("decompBinSlot", (byte)currentItemSlot);
-        compound.setInteger("decompBinProgress", binDecomposeProgress);
-
-        ItemStackHelper.saveAllItems(compound, itemStacks);
- 
-        if (hasCustomName())
-        {
-            compound.setString("CustomName", customName);
-        }      
-        
-        return compound;
-    }
-    
-    public void readNBT(NBTTagCompound compound)
-    {
-        ItemStackHelper.loadAllItems(compound, itemStacks);
-
-        currentItemProgress = compound.getInteger("decompItemProgress");
-        currentItemSlot = compound.getByte("decompBinSlot");
-        binDecomposeProgress = compound.getInteger("decompBinProgress");
-
-        if (currentItemSlot >= 0)
-        {
-            currentItemDecomposeTime = getItemDecomposeTime(itemStacks.get(currentItemSlot));
-        }
-        else
-        {
-            currentItemDecomposeTime = 0;
-        }
-
-        if (compound.hasKey("CustomName", 8))
-        {
-            customName = compound.getString("CustomName");
-        }  
-    }
     
     // ----------------------------------------------------------------------
     // TileEntity
-    
-    public static class CompostBinCapStorage implements IStorage<ICompostBinCap>
-    {
-        @Override
-        public NBTBase writeNBT(Capability<ICompostBinCap> capability, ICompostBinCap instance, EnumFacing side)
-        {
-            NBTTagCompound compound = new NBTTagCompound();
-
-            if (instance != null)
-            {
-                instance.writeNBT(compound);
-            }
-
-            return compound;
-        }
-
-        @Override
-        public void readNBT(Capability<ICompostBinCap> capability, ICompostBinCap instance, EnumFacing side, NBTBase nbt)
-        {
-            NBTTagCompound compound = (NBTTagCompound) nbt;
-
-            if ((compound != null) && (instance != null))
-            {
-                instance.readNBT(compound);
-            }
-        }
-    }
-
-    /**
-    * This controls whether the tile entity gets replaced whenever the block state 
-    * is changed. Normally only want this when block actually is replaced.
-    */
-    /*
-    // TODO Must be in TileEntity
-    @Override
-    public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState)
-    {
-    	return (oldState.getBlock() != newState.getBlock());
-    }
-    */
     
     /**
      * invalidates a tile entity
@@ -607,7 +591,8 @@ public class CompostBinCap /*extends TileEntity*/ extends TickingThingCap<IThing
     @Override
     public String getName()
     {
-        return this.hasCustomName() ? this.customName : getRealName();
+        IWorldNameable i = owner.as(IWorldNameable.class);
+        return (i != null) ? i.getName() : "";
     }
 
     /**
@@ -615,13 +600,15 @@ public class CompostBinCap /*extends TileEntity*/ extends TickingThingCap<IThing
      */
     public boolean hasCustomName()
     {
-        return this.customName != null && !this.customName.isEmpty();
+        IWorldNameable i = owner.as(IWorldNameable.class);
+        return (i != null) ? i.hasCustomName() : false;
     }
     
     @Override
     public ITextComponent getDisplayName()
     {
-        return new TextComponentString(getName());
+        IWorldNameable i = owner.as(IWorldNameable.class);
+        return (i != null) ? i.getDisplayName() : null;
     }
     
     // ----------------------------------------------------------------------
@@ -712,16 +699,7 @@ public class CompostBinCap /*extends TileEntity*/ extends TickingThingCap<IThing
     {
         BlockPos pos = getPos();
         
-        /*
-        if (! owner.sameAs( TileEntityThing(getWorld().getTileEntity(pos)) ) )
-        {
-            return false;
-        }
-        else
-        */
-        {
-            return player.getDistanceSq((double)pos.getX() + 0.5D, (double)pos.getY() + 0.5D, (double)pos.getZ() + 0.5D) <= USE_RANGE;
-        }
+        return player.getDistanceSq((double)pos.getX() + 0.5D, (double)pos.getY() + 0.5D, (double)pos.getZ() + 0.5D) <= USE_RANGE;
     }
 
     @Override
@@ -766,6 +744,7 @@ public class CompostBinCap /*extends TileEntity*/ extends TickingThingCap<IThing
     // ----------------------------------------------------------------------
     // IItemHandler
   
+    // this avoids a lot of boilerplate code, at expense of another object and indirection
     private IItemHandlerModifiable itemHandler;
     
     protected IItemHandlerModifiable handler()

@@ -39,7 +39,7 @@ public class ModConfig
 	@Name("Compost bin ticks between evaluation")
 	@Config.Comment("Number of ticks between evaluating compost bin contents - lower increases CPU expense")
 	@RangeInt(min=1)
-	public static int binEvaluateTicks = 4;
+	public static int binEvaluateTicks = 40;
 	
     @Name("Items")
     @Config.Comment("Set compost unit amounts for items.")

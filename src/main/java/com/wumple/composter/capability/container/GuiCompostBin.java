@@ -1,4 +1,6 @@
-package com.wumple.composter.bin;
+package com.wumple.composter.capability.container;
+
+import com.wumple.composter.capability.ICompostBinCap;
 
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;

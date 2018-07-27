@@ -1,7 +1,10 @@
-package com.wumple.composter.bin;
+package com.wumple.composter.capability.container;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.wumple.composter.capability.CompostBinCap;
+import com.wumple.composter.capability.ICompostBinCap;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -50,13 +53,6 @@ public class ContainerCompostBin extends Container
         for (int i = 0; i < 9; i++)
             hotbarSlots.add(addSlotToContainer(new Slot(inventory, i, InventoryX + i * 18, HotbarY)));
     }
-
-    /*
-     * @Override public void addCraftingToCrafters (ICrafting crafting) { super.addCraftingToCrafters(crafting);
-     * 
-     * crafting.sendProgressBarUpdate(this, 0, tileCompost.getDecompTime()); crafting.sendProgressBarUpdate(this, 1, tileCompost.getCurrentItemDecompTime());
-     * crafting.sendProgressBarUpdate(this, 2, tileCompost.itemDecomposeCount); }
-     */
 
     @Override
     public void addListener(IContainerListener listener)
@@ -163,18 +159,4 @@ public class ContainerCompostBin extends Container
 
         return itemStack;
     }
-    
-    /*
-    public void updateBlockState(World world, BlockPos pos)
-    {
-        TileEntityCompostBin te = Util.as(world.getTileEntity(pos), TileEntityCompostBin.class);
-
-        if (te == null)
-        {
-            return;
-        }
-
-        te.updateBlockState();
-    }
-    */
 }

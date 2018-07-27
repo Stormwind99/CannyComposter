@@ -3,7 +3,7 @@ package com.wumple.composter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.wumple.composter.bin.CompostBinCap;
+import com.wumple.composter.capability.CompostBinCap;
 import com.wumple.composter.config.ConfigHandler;
 
 import net.minecraftforge.fml.common.Mod;

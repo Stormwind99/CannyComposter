@@ -1,5 +1,7 @@
-package com.wumple.composter.bin;
+package com.wumple.composter.capability.container;
 
+import com.wumple.composter.capability.CompostBinCap;
+import com.wumple.composter.capability.ICompostBinCap;
 import com.wumple.util.capability.CapabilityUtils;
 
 import net.minecraft.entity.player.EntityPlayer;

@@ -1,4 +1,4 @@
-package com.wumple.composter.bin;
+package com.wumple.composter.capability.container;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;

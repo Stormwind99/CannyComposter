@@ -1,4 +1,4 @@
-package com.wumple.composter.bin;
+package com.wumple.composter.capability;
 
 import javax.annotation.Nullable;
 

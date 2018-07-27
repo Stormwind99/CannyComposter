@@ -1,4 +1,4 @@
-package com.wumple.composter.bin;
+package com.wumple.composter.capability.container;
 
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;

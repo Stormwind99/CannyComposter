@@ -1,8 +1,8 @@
 package com.wumple.composter;
 
 import com.wumple.composter.bin.BlockCompostBin;
-import com.wumple.composter.bin.ComposterGuiHandler;
 import com.wumple.composter.bin.TileEntityCompostBin;
+import com.wumple.composter.capability.container.ComposterGuiHandler;
 import com.wumple.composter.compost.ItemCompost;
 import com.wumple.util.misc.RegistrationHelpers;
 import com.wumple.util.misc.TypeIdentifier;

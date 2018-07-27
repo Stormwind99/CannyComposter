@@ -1,5 +1,6 @@
 package com.wumple.composter.bin;
 
+import com.wumple.composter.capability.CompostBinCap;
 import com.wumple.util.misc.RegistrationHelpers;
 
 import net.minecraft.block.BlockContainer;
@@ -9,6 +10,8 @@ import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
@@ -144,14 +147,12 @@ public class BlockCompostBin extends BlockContainer
     /**
      * Called by ItemBlocks after a block is set in the world, to allow post-place logic
      */
-    /*
     @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack)
     {
         super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
         // worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
 
-        
         if (stack.hasDisplayName())
         {
             TileEntity tileentity = worldIn.getTileEntity(pos);
@@ -161,55 +162,7 @@ public class BlockCompostBin extends BlockContainer
                 ((TileEntityCompostBin) tileentity).setName(stack.getDisplayName());
             }
         }
-        
     }
-    */
-
-    /*
-    protected IInventory getInventory(World worldIn, BlockPos pos)
-    {
-        TileEntity tileentity = worldIn.getTileEntity(pos);
-        IInventory iinventory = Util.as(tileentity, IInventory.class);
-        if (iinventory == null)
-        {
-            iinventory = ICompostBinCap.getCap(tileentity);
-        }
-        return iinventory;
-    }
-    */
-    
-    /**
-     * Called upon block activation (right click on the block.)
-     */
-    /*
-    @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn,
-            EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
-    {
-        IInventory iinventory = getInventory(worldIn, pos);
-
-        if (iinventory != null)
-        {
-            if (worldIn.getBlockState(pos.up()).doesSideBlockChestOpening(worldIn, pos.up(), EnumFacing.DOWN))
-            {
-                return true;
-            }
-            else if (worldIn.isRemote)
-            {
-                return true;
-            }
-            else
-            {
-                playerIn.openGui(Composter.instance, ComposterGuiHandler.compostBinGuiID, worldIn, pos.getX(), pos.getY(), pos.getZ());
-                return true;
-            }
-        }
-        else
-        {
-            return true;
-        }
-    }
-    */
 
     // ----------------------------------------------------------------------
     // BlockContainer
@@ -224,25 +177,6 @@ public class BlockCompostBin extends BlockContainer
     {
         return EnumBlockRenderType.MODEL;
     }
-
-    /**
-     * Called serverside after this block is replaced with another in Chunk, but before the Tile Entity is updated
-     */
-    /*
-    @Override
-    public void breakBlock(World worldIn, BlockPos pos, IBlockState state)
-    {
-        IInventory inventory = getInventory(worldIn, pos);
-
-        if (inventory != null)
-        {
-            InventoryHelper.dropInventoryItems(worldIn, pos, inventory);
-            worldIn.updateComparatorOutputLevel(pos, this);
-        }
-
-        super.breakBlock(worldIn, pos, state);
-    }
-    */
 
     // ----------------------------------------------------------------------
     // ITileEntityProvider
