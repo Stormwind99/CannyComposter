@@ -22,29 +22,30 @@ import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.registries.IForgeRegistry;
 
 @GameRegistry.ObjectHolder("composter")
-public class ObjectHolder {
-    
-    @GameRegistry.ObjectHolder("composter:compost_bin")
-    public static /*final*/ Block compost_bin = null;
-    
-	//@GameRegistry.ObjectHolder("composter:compost_bin_item")
-    public static /*final*/ Item compost_bin_item = null;
+public class ObjectHolder
+{
 
-	//@GameRegistry.ObjectHolder("composter:compost")
-    public static /*final*/ Item compost = null;
+    @GameRegistry.ObjectHolder("composter:compost_bin")
+    public static /* final */ Block compost_bin = null;
+
+    // @GameRegistry.ObjectHolder("composter:compost_bin_item")
+    public static /* final */ Item compost_bin_item = null;
+
+    // @GameRegistry.ObjectHolder("composter:compost")
+    public static /* final */ Item compost = null;
 
     // ----------------------------------------------------------------------
     // Ore Dictionary
 
     public static class Ids
     {
-        protected final static String[] composters = {"composter"};
-        protected final static String[] fertilizers = {"fertilizer"};
+        protected final static String[] composters = { "composter" };
+        protected final static String[] fertilizers = { "fertilizer" };
         protected final static String BONEMEAL = "minecraft:dye@15";
         protected final static String BONEMEALOREDICT = "bonemeal";
-        public static final String listAllseed="listAllseed";
+        public static final String listAllseed = "listAllseed";
     }
-    
+
     // ----------------------------------------------------------------------
     // Events
 
@@ -59,41 +60,41 @@ public class ObjectHolder {
 
             compost = RegistrationHelpers.regHelperOre(registry, new ItemCompost(), Ids.fertilizers);
             compost_bin_item = RegistrationHelpers.registerItemBlockOre(registry, compost_bin, Ids.composters);
-            
+
             RegistrationHelpers.registerOreNames(TypeIdentifier.build(Ids.BONEMEAL).create(1), Ids.fertilizers);
             OreDictionary.registerOre(Ids.BONEMEALOREDICT, TypeIdentifier.build(Ids.BONEMEAL).create(1));
             OreDictionary.registerOre(Ids.listAllseed, Items.WHEAT_SEEDS);
             OreDictionary.registerOre(Ids.listAllseed, Items.BEETROOT_SEEDS);
             OreDictionary.registerOre(Ids.listAllseed, Items.PUMPKIN_SEEDS);
             OreDictionary.registerOre(Ids.listAllseed, Items.MELON_SEEDS);
-            
+
             registerTileEntities();
-        }    
-        
+        }
+
         @SubscribeEvent
         public static void registerBlocks(RegistryEvent.Register<Block> event)
         {
             final IForgeRegistry<Block> registry = event.getRegistry();
 
             compost_bin = RegistrationHelpers.regHelper(registry, new BlockCompostBin());
-        } 
-        
+        }
+
         public static void registerTileEntities()
         {
-        	RegistrationHelpers.registerTileEntity(TileEntityCompostBin.class, "composter:compost_bin");
+            RegistrationHelpers.registerTileEntity(TileEntityCompostBin.class, "composter:compost_bin");
         }
 
         @SideOnly(Side.CLIENT)
         @SubscribeEvent
         public static void registerRenders(ModelRegistryEvent event)
         {
-        	RegistrationHelpers.registerRender(compost);
-        	RegistrationHelpers.registerRender(compost_bin, compost_bin_item);
+            RegistrationHelpers.registerRender(compost);
+            RegistrationHelpers.registerRender(compost_bin, compost_bin_item);
         }
-        
+
         public static void registerGuiHandlers()
         {
-        	 NetworkRegistry.INSTANCE.registerGuiHandler(Composter.instance, new ComposterGuiHandler());
+            NetworkRegistry.INSTANCE.registerGuiHandler(Composter.instance, new ComposterGuiHandler());
         }
-	}
+    }
 }

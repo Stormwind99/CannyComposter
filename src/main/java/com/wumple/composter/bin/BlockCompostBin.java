@@ -159,7 +159,7 @@ public class BlockCompostBin extends BlockContainer
 
             if (tileentity instanceof TileEntityCompostBin)
             {
-                ((TileEntityCompostBin) tileentity).setName(stack.getDisplayName());
+                ((TileEntityCompostBin) tileentity).setCustomName(stack.getDisplayName());
             }
         }
     }

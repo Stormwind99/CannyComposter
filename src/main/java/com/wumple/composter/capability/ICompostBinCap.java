@@ -27,6 +27,7 @@ public interface ICompostBinCap extends IItemHandlerModifiable, IInventory, ITic
     void updateBlockState();
     
     void onBlockBreak(World worldIn, BlockPos pos);
+
     void onRightBlockClicked(PlayerInteractEvent.RightClickBlock event);
     
     void detectAndSendChanges(Container containerIn, List<IContainerListener> listeners);

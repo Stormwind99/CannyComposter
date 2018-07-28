@@ -1,8 +1,10 @@
 package com.wumple.composter.capability;
 
-import com.wumple.composter.bin.TileEntityCompostBin;
+import com.wumple.composter.config.ConfigHandler;
+import com.wumple.util.adapter.EntityThing;
 import com.wumple.util.adapter.TileEntityThing;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -26,15 +28,13 @@ public class CompostBinHandler
     {
         TileEntity entity = event.getObject();
 
-        //if (ConfigHandler.composters.doesIt(entity))
-        if (entity instanceof TileEntityCompostBin)
+        if (ConfigHandler.composters.doesIt(entity))
         {
             CompostBinCapProvider provider = CompostBinCapProvider.createProvider(new TileEntityThing(entity));
             event.addCapability(CompostBinCap.ID, provider);
         }
     }
 
-    /*
     @SubscribeEvent
     public static void attachCapabilitiesEntity(AttachCapabilitiesEvent<Entity> event)
     {
@@ -46,11 +46,12 @@ public class CompostBinHandler
             event.addCapability(CompostBinCap.ID, provider);
         }
     }
-    */
     
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event)
     {
+        if (event.getEntityPlayer().isSpectator()) { return; }
+            
         World worldIn = event.getWorld();
         BlockPos pos = event.getPos();
         

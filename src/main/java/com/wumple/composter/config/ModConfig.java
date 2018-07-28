@@ -53,6 +53,18 @@ public class ModConfig
         public Map<String, Integer> amount = new LinkedHashMap<String, Integer>();
     }
     
+    @Name("Composters")
+    @Config.Comment("Things that can compost the items.")
+    public static Composters composters = new Composters();
+
+    public static class Composters
+    {
+        @Name("Compost speed")
+        @Config.Comment("Speed of composting, 100 is normal speed, 0 means doesn't compost")
+        @RangeInt(min = 0)
+        public Map<String, Integer> amount = new LinkedHashMap<String, Integer>();
+    }
+    
     @Name("Debugging")
     @Config.Comment("Debugging options")
     public static Debugging zdebugging = new Debugging();

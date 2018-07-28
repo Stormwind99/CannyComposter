@@ -66,7 +66,7 @@ public class ContainerCompostBin extends Container
     {
         super.detectAndSendChanges();
         tileCompost.detectAndSendChanges(this, listeners);
-    }    
+    }
 
     @SideOnly(Side.CLIENT)
     @Override

@@ -16,7 +16,7 @@ public class CompostBinCapProvider extends ThingCapProvider<IThing, ICompostBinC
     }
 
     public CompostBinCapProvider(Capability<ICompostBinCap> capability, @Nullable EnumFacing facing, ICompostBinCap instance,
-                IThing ownerIn)
+            IThing ownerIn)
     {
         super(capability, facing, instance, ownerIn);
     }

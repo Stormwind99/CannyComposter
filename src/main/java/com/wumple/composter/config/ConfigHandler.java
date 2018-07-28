@@ -11,9 +11,12 @@ import net.minecraftforge.common.config.ConfigManager;
 public class ConfigHandler
 {
 	public static final MatchingConfig<Integer> compostAmounts = new MatchingConfig<Integer>(ModConfig.items.amount, CompostBinCap.NO_DECOMPOSE_TIME);
+	public static final MatchingConfig<Integer> composters = new MatchingConfig<Integer>(ModConfig.composters.amount, CompostBinCap.NO_COMPOSTING);
 	
 	public static void init()
 	{
+	    composters.addDefaultProperty("composter:compost_bin", CompostBinCap.DEFAULT_SPEED);
+	    
 		compostAmounts.addDefaultProperty(Items.ROTTEN_FLESH, "minecraft:rotten_flesh", 100);
 		compostAmounts.addDefaultProperty("composter:compost_bin", 125);
 		compostAmounts.addDefaultProperty("minecraft:wooden_axe", 125);

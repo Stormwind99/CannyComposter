@@ -13,26 +13,26 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
-@Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.MOD_VERSION, dependencies = Reference.DEPENDENCIES, updateJSON = Reference.UPDATEJSON, certificateFingerprint=Reference.FINGERPRINT)
+@Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.MOD_VERSION, dependencies = Reference.DEPENDENCIES, updateJSON = Reference.UPDATEJSON, certificateFingerprint = Reference.FINGERPRINT)
 public class Composter
 {
     @Mod.Instance(Reference.MOD_ID)
     public static Composter instance;
-    
+
     public static Logger logger;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
         logger = event.getModLog();
-        
+
         CompostBinCap.register();
     }
 
     @EventHandler
-    public void init(FMLInitializationEvent event) 
+    public void init(FMLInitializationEvent event)
     {
-    	com.wumple.composter.ObjectHolder.RegistrationHandler.registerGuiHandlers();
+        com.wumple.composter.ObjectHolder.RegistrationHandler.registerGuiHandlers();
     }
 
     @EventHandler
@@ -51,7 +51,8 @@ public class Composter
         }
         if (logger != null)
         {
-            logger.warn("Invalid fingerprint detected! The file " + event.getSource().getName() + " may have been tampered with. This version will NOT be supported by the author!");
+            logger.warn("Invalid fingerprint detected! The file " + event.getSource().getName()
+                    + " may have been tampered with. This version will NOT be supported by the author!");
             logger.warn("Expected " + event.getExpectedFingerprint() + " found " + event.getFingerprints().toString());
         }
     }
