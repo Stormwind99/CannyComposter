@@ -536,9 +536,9 @@ public class CompostBinCap /* extends TileEntity */ extends TickingThingCap<IThi
 
         boolean shouldUpdate = false;
 
-        if (isDecomposing)
+        if (isDecomposing && (compostingSpeed != 0))
         {
-            long modTicks = (ticks * compostingSpeed) / DEFAULT_SPEED;
+            long modTicks = Math.max(1, (ticks * compostingSpeed) / DEFAULT_SPEED);
             currentItemProgress += modTicks;
         }
 
