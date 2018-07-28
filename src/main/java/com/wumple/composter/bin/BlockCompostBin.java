@@ -2,16 +2,14 @@ package com.wumple.composter.bin;
 
 import com.wumple.composter.capability.CompostBinCap;
 import com.wumple.util.misc.RegistrationHelpers;
+import com.wumple.util.nameable.NameableBlockContainer;
 
-import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
@@ -22,7 +20,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class BlockCompostBin extends BlockContainer
+public class BlockCompostBin extends NameableBlockContainer
 {
     // ----------------------------------------------------------------------
     // BlockCompostBin
@@ -142,26 +140,6 @@ public class BlockCompostBin extends BlockContainer
     protected BlockStateContainer createBlockState()
     {
         return new BlockStateContainer(this, new IProperty[] { CompostBinCap.LEVEL });
-    }
-
-    /**
-     * Called by ItemBlocks after a block is set in the world, to allow post-place logic
-     */
-    @Override
-    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack)
-    {
-        super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
-        // worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
-
-        if (stack.hasDisplayName())
-        {
-            TileEntity tileentity = worldIn.getTileEntity(pos);
-
-            if (tileentity instanceof TileEntityCompostBin)
-            {
-                ((TileEntityCompostBin) tileentity).setCustomName(stack.getDisplayName());
-            }
-        }
     }
 
     // ----------------------------------------------------------------------

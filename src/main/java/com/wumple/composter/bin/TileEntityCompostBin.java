@@ -1,12 +1,12 @@
 package com.wumple.composter.bin;
 
-import com.wumple.util.tileentity.CustomNamedTileEntity;
+import com.wumple.util.nameable.NameableTileEntity;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class TileEntityCompostBin extends CustomNamedTileEntity
+public class TileEntityCompostBin extends NameableTileEntity
 {
     /**
      * This controls whether the tile entity gets replaced whenever the block state is changed. Normally only want this when block actually is replaced.
