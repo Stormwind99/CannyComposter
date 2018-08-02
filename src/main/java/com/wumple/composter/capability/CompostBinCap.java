@@ -11,7 +11,6 @@ import com.wumple.composter.capability.container.ContainerCompostBin;
 import com.wumple.composter.config.ConfigHandler;
 import com.wumple.composter.config.ModConfig;
 import com.wumple.util.adapter.IThing;
-import com.wumple.util.adapter.TileEntityThing;
 import com.wumple.util.capability.tickingthing.TickingThingCap;
 import com.wumple.util.misc.SUtil;
 import com.wumple.util.misc.TypeIdentifier;
@@ -607,12 +606,12 @@ public class CompostBinCap /* extends TileEntity */ extends TickingThingCap<IThi
      */
     public void invalidate()
     {
-        owner.invalidate();
-        TileEntityThing tet = Util.as(owner, TileEntityThing.class);
-        if (tet != null)
+        TileEntity te = owner.as(TileEntity.class);
+        if (te != null)
         {
-            tet.owner.updateContainingBlockInfo();
+            te.updateContainingBlockInfo();
         }
+        owner.invalidate();
     }
 
     // ----------------------------------------------------------------------

@@ -1,8 +1,12 @@
 package com.wumple.composter.config;
 
+import com.wumple.composter.ObjectHolder;
 import com.wumple.composter.Reference;
+import com.wumple.composter.bin.BlockCompostBin;
 import com.wumple.composter.capability.CompostBinCap;
+import com.wumple.composter.compost.ItemCompost;
 import com.wumple.util.config.MatchingConfig;
+import com.wumple.util.config.MatchingConfigBase;
 
 import net.minecraft.init.Items;
 import net.minecraftforge.common.config.Config;
@@ -15,10 +19,13 @@ public class ConfigHandler
 	
 	public static void init()
 	{
-	    composters.addDefaultProperty("composter:compost_bin", CompostBinCap.DEFAULT_SPEED);
+	    composters.addDefaultProperty(BlockCompostBin.ID, CompostBinCap.DEFAULT_SPEED);
+
+        // force 1 compost in = 1 compost out
+        ModConfig.items.amount.put(ItemCompost.ID, ModConfig.binDecomposeUnitsNeeded);
 	    
 		compostAmounts.addDefaultProperty(Items.ROTTEN_FLESH, "minecraft:rotten_flesh", 100);
-		compostAmounts.addDefaultProperty("composter:compost_bin", 125);
+		compostAmounts.addDefaultProperty(BlockCompostBin.ID, 125);
 		compostAmounts.addDefaultProperty("minecraft:wooden_axe", 125);
 		compostAmounts.addDefaultProperty("minecraft:wooden_pickaxe", 125);
 		compostAmounts.addDefaultProperty("minecraft:wooden_sword", 125);
@@ -54,10 +61,14 @@ public class ConfigHandler
         compostAmounts.addDefaultProperty("cropNetherWart", 125);
         compostAmounts.addDefaultProperty("sugarcane", 125);
         compostAmounts.addDefaultProperty("blockCactus", 125);
+        compostAmounts.addDefaultProperty("minecraft:melon_block", 600); // 3 + (0-5) slices dropped
+        compostAmounts.addDefaultProperty("minecraft:pumpkin", 300); // 3 ingredients
 
         // misc materials
         compostAmounts.addDefaultProperty("dye", 125);
         compostAmounts.addDefaultProperty("paper", 75);
+        compostAmounts.addDefaultProperty("minecraft:arrow", 125);
+        compostAmounts.addDefaultProperty("minecraft:feather", 50);
 
         // mob drops
         compostAmounts.addDefaultProperty("slimeball", 125);
@@ -93,12 +104,16 @@ public class ConfigHandler
         
         // Minecraft and Pam's Harvestcraft - Seeds:
         // NOTE I can't find this in sources anywhere - is it real?
-        compostAmounts.addDefaultProperty("listAllseed", 50);
+        compostAmounts.addDefaultProperty(ObjectHolder.Ids.listAllSeed, 50);
+        
+        compostAmounts.addDefaultProperty(ObjectHolder.Ids.listAllMelon, 150);
+        compostAmounts.addDefaultProperty(ObjectHolder.Ids.listAllFlower, 75);
+        compostAmounts.addDefaultProperty(ObjectHolder.Ids.listAllMushroom, 100);
         
         // ADD NEW GENERAL ENTRIES HERE!
         
         // default for food
-        compostAmounts.addDefaultProperty("minecraft:food", 125);
+        compostAmounts.addDefaultProperty(MatchingConfigBase.FOOD_TAG, 125);
         compostAmounts.addDefaultProperty("compostable", 100);
         
         ConfigManager.sync(Reference.MOD_ID, Config.Type.INSTANCE);

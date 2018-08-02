@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.wumple.composter.Reference;
+import com.wumple.composter.compost.ItemCompost;
 
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Config.Name;
@@ -29,7 +30,7 @@ public class ModConfig
 	
 	@Name("Compost item")
 	@Config.Comment("The item that the compost bin generates")
-	public static String compostItem = "composter:compost";
+	public static String compostItem = ItemCompost.ID;
 	
 	@Name("Decomposed units needed")
 	@Config.Comment("The number of compost units needed to make one compost output")

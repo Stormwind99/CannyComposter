@@ -21,13 +21,14 @@ import net.minecraft.world.WorldServer;
 public class ItemCompost extends Item
 {
     protected static final int NUM_PARTICLES = 15;
+    public static final String ID = "composter:compost";
 
     public ItemCompost()
     {
         setMaxStackSize(64);
         setCreativeTab(CreativeTabs.MISC);
 
-        RegistrationHelpers.nameHelper(this, "composter:compost");
+        RegistrationHelpers.nameHelper(this, ID);
     }
 
     @Override

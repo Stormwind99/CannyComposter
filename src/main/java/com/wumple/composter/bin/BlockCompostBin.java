@@ -24,6 +24,8 @@ public class BlockCompostBin extends NameableBlockContainer
 {
     // ----------------------------------------------------------------------
     // BlockCompostBin
+    
+    static public final String ID = "composter:compost_bin";
 
     public BlockCompostBin()
     {
@@ -39,7 +41,7 @@ public class BlockCompostBin extends NameableBlockContainer
         setCreativeTab(CreativeTabs.MISC);
         this.setDefaultState(this.blockState.getBaseState().withProperty(CompostBinCap.LEVEL, Integer.valueOf(0)));
 
-        RegistrationHelpers.nameHelper(this, "composter:compost_bin");
+        RegistrationHelpers.nameHelper(this, ID);
     }
 
     // ----------------------------------------------------------------------
