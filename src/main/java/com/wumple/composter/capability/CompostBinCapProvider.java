@@ -25,4 +25,26 @@ public class CompostBinCapProvider extends ThingCapProvider<IThing, ICompostBinC
     {
         return new CompostBinCapProvider(CompostBinCap.CAPABILITY, CompostBinCap.DEFAULT_FACING, ownerIn);
     }
+    
+    @Override
+    public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing)
+    {
+        return ( (capability != null) && (
+                (capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) ||
+                super.hasCapability(capability, facing) )
+                ) ;
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    @Nullable
+    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing)
+    {
+        if (hasCapability(capability, facing))
+        {
+            return (T)getCapability().cast(getInstance());
+        }
+
+        return null;
+    }
 }

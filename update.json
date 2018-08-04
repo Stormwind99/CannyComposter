@@ -5,8 +5,9 @@
     "1.12.2-recommended": "1.6.0"
   },
   "1.12.2": {
+    "1.7.0": "Better IItemHandler support, fixes faster Food Funk rotting in Composter.",
     "1.6.0": "Flowers, melons, and mushrooms compostable. Library update. Custom named compost bins stay named.",
-    "1.5.0": "Compost bin functionaity converted to capability. Bug fixes.",
+    "1.5.0": "Compost bin functionality converted to capability. Bug fixes.",
     "1.4.0": "More compostables from other mods listed. Library update.",
     "1.3.3": "Signing jar",
     "1.3.2": "Updated WumpleUtil.",
