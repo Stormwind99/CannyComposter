@@ -5,8 +5,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.wumple.util.adapter.IThing;
-import com.wumple.util.capability.CapabilityUtils;
 import com.wumple.util.capability.tickingthing.ITickingThingCap;
+import com.wumple.util.container.capabilitylistener.CapabilityUtils;
 
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IContainerListener;

@@ -11,10 +11,10 @@ import com.wumple.composter.capability.container.ContainerCompostBin;
 import com.wumple.composter.config.ConfigHandler;
 import com.wumple.composter.config.ModConfig;
 import com.wumple.util.adapter.IThing;
+import com.wumple.util.base.misc.Util;
 import com.wumple.util.capability.tickingthing.TickingThingCap;
 import com.wumple.util.misc.SUtil;
 import com.wumple.util.misc.TypeIdentifier;
-import com.wumple.util.misc.Util;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.PropertyInteger;

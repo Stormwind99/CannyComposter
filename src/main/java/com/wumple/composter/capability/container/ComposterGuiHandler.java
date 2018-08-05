@@ -2,7 +2,7 @@ package com.wumple.composter.capability.container;
 
 import com.wumple.composter.capability.CompostBinCap;
 import com.wumple.composter.capability.ICompostBinCap;
-import com.wumple.util.capability.CapabilityUtils;
+import com.wumple.util.container.capabilitylistener.CapabilityUtils;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
