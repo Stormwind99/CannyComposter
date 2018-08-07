@@ -22,5 +22,5 @@ dependencies {
     // for more info...
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
-    compile "com.wumple.wumpleutil:wumpleutil:2.11.6"
+    compile "com.wumple.wumpleutil:wumpleutil:2.11.7"
 }
