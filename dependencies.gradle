@@ -1,6 +1,8 @@
 
 // add repositories for any dependencies
 repositories {
+    mavenLocal()
+    //mavenCentral()
     maven {
         url  "https://dl.bintray.com/stormwind/MinecraftModding" 
     }
@@ -20,6 +22,5 @@ dependencies {
     // for more info...
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
-    //compile "com.wumple:wumpleutil:2.0.0"
-    compile "upload:wumpleutil:2.10.3"
+    compile "com.wumple.wumpleutil:wumpleutil:2.11.6"
 }
