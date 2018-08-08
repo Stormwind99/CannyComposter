@@ -24,7 +24,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IContainerListener;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
@@ -50,7 +49,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.wrapper.InvWrapper;
 
-public class CompostBinCap /* extends TileEntity */ extends TickingThingCap<IThing> implements IInventory, ICompostBinCap, IInteractionObject
+public class CompostBinCap /* extends TileEntity */ extends TickingThingCap<IThing> implements ICompostBinCap, IInteractionObject
 {
     // The {@link Capability} instance
     @CapabilityInject(ICompostBinCap.class)
