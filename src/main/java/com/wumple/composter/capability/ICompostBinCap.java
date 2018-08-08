@@ -20,7 +20,7 @@ import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.items.IItemHandlerModifiable;
 
-public interface ICompostBinCap extends IItemHandlerModifiable, IInventory, ITickingThingCap<IThing>, INBTSerializable<NBTBase>
+public interface ICompostBinCap extends IInventory, ITickingThingCap<IThing>, INBTSerializable<NBTBase>
 {
     boolean isActive();
     int getDecomposeTimeRemainingScaled(int size);
@@ -32,6 +32,8 @@ public interface ICompostBinCap extends IItemHandlerModifiable, IInventory, ITic
     
     void detectAndSendChanges(Container containerIn, List<IContainerListener> listeners);
     void updateProgressBar(int id, int value);
+    
+    IItemHandlerModifiable handler();
     
     static ICompostBinCap getCap(@Nullable ICapabilityProvider provider)
     {

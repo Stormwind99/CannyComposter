@@ -2,8 +2,6 @@ package com.wumple.composter.capability;
 
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import com.wumple.composter.Composter;
 import com.wumple.composter.Reference;
 import com.wumple.composter.capability.container.ComposterGuiHandler;
@@ -24,7 +22,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IContainerListener;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
@@ -50,7 +47,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.wrapper.InvWrapper;
 
-public class CompostBinCap /* extends TileEntity */ extends TickingThingCap<IThing> implements IInventory, ICompostBinCap, IInteractionObject
+public class CompostBinCap /* extends TileEntity */ extends TickingThingCap<IThing> implements ICompostBinCap, IInteractionObject
 {
     // The {@link Capability} instance
     @CapabilityInject(ICompostBinCap.class)
@@ -773,13 +770,15 @@ public class CompostBinCap /* extends TileEntity */ extends TickingThingCap<IThi
         owner.markDirty();
     }
 
+    
     // ----------------------------------------------------------------------
     // IItemHandler
 
     // this avoids a lot of boilerplate code, at expense of another object and indirection
-    private IItemHandlerModifiable itemHandler;
+    protected IItemHandlerModifiable itemHandler;
 
-    protected IItemHandlerModifiable handler()
+    @Override
+    public IItemHandlerModifiable handler()
     {
         if (itemHandler == null)
         {
@@ -789,6 +788,7 @@ public class CompostBinCap /* extends TileEntity */ extends TickingThingCap<IThi
         return itemHandler;
     }
 
+    /*
     @Override
     public int getSlots()
     {
@@ -820,6 +820,7 @@ public class CompostBinCap /* extends TileEntity */ extends TickingThingCap<IThi
     {
         handler().setStackInSlot(slot, stack);
     }
+    */
 
     // ----------------------------------------------------------------------
     /// IInteractionObject

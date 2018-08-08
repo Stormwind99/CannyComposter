@@ -40,6 +40,10 @@ public class CompostBinCapProvider extends ThingCapProvider<IThing, ICompostBinC
     @Nullable
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing)
     {
+        if (capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
+        {
+            return (T)getInstance().handler();
+        }
         if (hasCapability(capability, facing))
         {
             return (T)getCapability().cast(getInstance());

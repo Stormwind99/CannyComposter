@@ -55,11 +55,11 @@ public class CompostBinHandler
         World worldIn = event.getWorld();
         BlockPos pos = event.getPos();
         
-        ICompostBinCap iinventory = ICompostBinCap.getCap(worldIn, pos);
+        ICompostBinCap cap = ICompostBinCap.getCap(worldIn, pos);
 
-        if (iinventory != null)
+        if (cap != null)
         {
-            iinventory.onRightBlockClicked(event);
+            cap.onRightBlockClicked(event);
         }
     }
     
@@ -74,11 +74,11 @@ public class CompostBinHandler
         }
         
         BlockPos pos = event.getPos();
-        ICompostBinCap iinventory = ICompostBinCap.getCap(worldIn, pos);
+        ICompostBinCap cap = ICompostBinCap.getCap(worldIn, pos);
         
-        if (iinventory != null)
+        if (cap != null)
         {
-            iinventory.onBlockBreak(worldIn, pos);
+            cap.onBlockBreak(worldIn, pos);
         }
     }
 
