@@ -5,6 +5,22 @@ repositories {
     maven {
         url  "https://dl.bintray.com/stormwind/MinecraftModding" 
     }
+    maven { // HWYLA / WAILA
+        name "Mobius Repo"
+        url "http://tehnut.info/maven"
+    }
+    maven { // TOP
+        name 'tterrag maven'
+        url "http://maven.tterrag.com/"
+    }
+  maven { // JEI
+    name = "Progwml6 maven"
+    url = "http://dvs1.progwml6.com/files/maven"
+  }
+  maven { // JEI mirror
+    name = "ModMaven"
+    url = "modmaven.k-4u.nl"
+  }
 }
 
 dependencies {
@@ -31,6 +47,14 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
-    deobfCompile "com.wumple.wumpleutil:wumpleutil:2.11.9"
+    deobfCompile "com.wumple.wumpleutil:wumpleutil:2.11.12"
+
+    deobfCompile "mcp.mobius.waila:Hwyla:1.8.26-B41_1.12.2:api"
+    deobfCompile "mcjty.theoneprobe:TheOneProbe-1.12:1.12-1.4.23-16:api"
+
+    // compile against the JEI API but do not include it at runtime
+    //deobfProvided "mezz.jei:jei_1.12.2:4.11.0.206:api"
+    // at runtime, use the full JEI jar
+    //runtime "mezz.jei:jei_1.12.2:4.11.0.206"
 }
 

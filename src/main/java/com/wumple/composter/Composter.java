@@ -5,6 +5,8 @@ import org.apache.logging.log4j.Logger;
 
 import com.wumple.composter.capability.CompostBinCap;
 import com.wumple.composter.config.ConfigHandler;
+import com.wumple.composter.integration.theoneprobe.TOPCompatibility;
+import com.wumple.composter.integration.waila.WailaCompatibility;
 import com.wumple.util.mod.ModBase;
 
 import net.minecraftforge.fml.common.Mod;
@@ -26,6 +28,8 @@ public class Composter extends ModBase
     {
         super.preInit(event);
         CompostBinCap.register();
+        TOPCompatibility.register();
+        WailaCompatibility.register();
     }
 
     @EventHandler

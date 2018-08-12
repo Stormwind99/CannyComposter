@@ -72,7 +72,6 @@ public class BlockCompostBin extends NameableBlockContainer
     public BlockRenderLayer getRenderLayer()
     {
         return BlockRenderLayer.CUTOUT_MIPPED;
-        // return BlockRenderLayer.SOLID;
     }
 
     /**

@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import com.wumple.util.adapter.IThing;
 import com.wumple.util.capability.tickingthing.ITickingThingCap;
 import com.wumple.util.container.capabilitylistener.CapabilityUtils;
+import com.wumple.util.tooltip.ITooltipProvider;
 
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IContainerListener;
@@ -20,7 +21,7 @@ import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.items.IItemHandlerModifiable;
 
-public interface ICompostBinCap extends IInventory, ITickingThingCap<IThing>, INBTSerializable<NBTBase>
+public interface ICompostBinCap extends IInventory, ITickingThingCap<IThing>, INBTSerializable<NBTBase>, ITooltipProvider
 {
     boolean isActive();
     int getDecomposeTimeRemainingScaled(int size);

@@ -36,6 +36,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.IInteractionObject;
 import net.minecraft.world.IWorldNameable;
 import net.minecraft.world.World;
@@ -209,6 +210,12 @@ public class CompostBinCap /* extends TileEntity */ extends TickingThingCap<IThi
         return !SUtil.isEmpty(itemStacks.get(OUTPUT_SLOT));
     }
 
+    public int getOutputItemCount()
+    {
+        ItemStack output = itemStacks.get(OUTPUT_SLOT);
+        return (output != null) ? output.getCount() : 0;
+    }
+    
     private int selectRandomFilledSlot()
     {
         int filledSlotCount = getFilledSlots();
@@ -788,40 +795,6 @@ public class CompostBinCap /* extends TileEntity */ extends TickingThingCap<IThi
         return itemHandler;
     }
 
-    /*
-    @Override
-    public int getSlots()
-    {
-        return handler().getSlots();
-    }
-
-    @Override
-    @Nonnull
-    public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate)
-    {
-        return handler().insertItem(slot, stack, simulate);
-    }
-
-    @Override
-    @Nonnull
-    public ItemStack extractItem(int slot, int amount, boolean simulate)
-    {
-        return handler().extractItem(slot, amount, simulate);
-    }
-
-    @Override
-    public int getSlotLimit(int slot)
-    {
-        return handler().getSlotLimit(slot);
-    }
-
-    @Override
-    public void setStackInSlot(int slot, @Nonnull ItemStack stack)
-    {
-        handler().setStackInSlot(slot, stack);
-    }
-    */
-
     // ----------------------------------------------------------------------
     /// IInteractionObject
 
@@ -833,5 +806,27 @@ public class CompostBinCap /* extends TileEntity */ extends TickingThingCap<IThi
     public String getGuiID()
     {
         return Integer.toString(ComposterGuiHandler.compostBinGuiID);
+    }
+    
+    // ----------------------------------------------------------------------
+    /// ITooltipProvider
+
+    @Override
+    public void doTooltip(ItemStack stack, EntityPlayer entity, boolean advanced, List<String> tips)
+    {
+        String key = "misc.composter.tooltip.composting.inactive"; // Inactive
+        
+        if (isDecomposing())
+        {
+            key = "misc.composter.tooltip.composting.active"; // Active
+        }
+        
+        tips.add(new TextComponentTranslation(key, getOutputItemCount()).getUnformattedText());
+        
+        if (advanced)
+        {
+            tips.add(new TextComponentTranslation("misc.composter.tooltip.advanced.composting.item", currentItemSlot, currentItemProgress, currentItemDecomposeTime).getUnformattedText());
+            tips.add(new TextComponentTranslation("misc.composter.tooltip.advanced.composting.output", binDecomposeProgress, getDecomposeUnitsNeeded(), compostingSpeed).getUnformattedText());
+        }
     }
 }
