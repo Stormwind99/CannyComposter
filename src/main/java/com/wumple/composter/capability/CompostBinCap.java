@@ -416,6 +416,8 @@ public class CompostBinCap /* extends TileEntity */ extends TickingThingCap<IThi
         currentItemSlot = compound.getByte("decompBinSlot");
         binDecomposeProgress = compound.getInteger("decompBinProgress");
         currentItemDecomposeTime = (currentItemSlot >= 0) ? getItemDecomposeTime(itemStacks.get(currentItemSlot)) : 0;
+        
+        // MAYBE sanity check currentItemSlot
     }
 
     // ----------------------------------------------------------------------
@@ -552,6 +554,13 @@ public class CompostBinCap /* extends TileEntity */ extends TickingThingCap<IThi
 
             if (isDecomposing || (filledSlotCount > 0))
             {
+                // reset if item removed
+                if ((currentItemSlot != NO_SLOT) && (itemStacks.get(currentItemSlot).getCount() <= 0))
+                {
+                    forgetCurrentItem();
+                    shouldUpdate = true;   
+                }
+                
                 // decompose current item if it is done
                 if (currentItemProgress > currentItemDecomposeTime)
                 {
