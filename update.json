@@ -1,10 +1,11 @@
 {
   "homepage": "https://github.com/Stormwind99/CannyComposter",
   "promos": {
-    "1.12.2-latest": "1.9.0",
-    "1.12.2-recommended": "1.9.0"
+    "1.12.2-latest": "1.9.1",
+    "1.12.2-recommended": "1.9.1"
   },
   "1.12.2": {
+    "1.9.1": "Library update",
     "1.9.0": "Basic support for Waila, Hwyla, and TheOneProbe.\nDebug screen support.\nFix for #16 Compost progress bar rarely goes over right side of GUI.",
     "1.8.7": "Make mod name more unique - Canny Composter",
     "1.8.6": "Another crash fix for CompostBinCap.getItemInSlot abstract",
