@@ -6,7 +6,7 @@ import com.wumple.composter.bin.BlockCompostBin;
 import com.wumple.composter.capability.CompostBinCap;
 import com.wumple.composter.compost.ItemCompost;
 import com.wumple.util.config.MatchingConfig;
-import com.wumple.util.config.MatchingConfigBase;
+import com.wumple.util.config.NameKeys;
 
 import net.minecraft.init.Items;
 import net.minecraftforge.common.config.Config;
@@ -113,7 +113,7 @@ public class ConfigHandler
         // ADD NEW GENERAL ENTRIES HERE!
         
         // default for food
-        compostAmounts.addDefaultProperty(MatchingConfigBase.FOOD_TAG, 125);
+        compostAmounts.addDefaultProperty(NameKeys.FOOD_TAG, 125);
         compostAmounts.addDefaultProperty("compostable", 100);
         
         ConfigManager.sync(Reference.MOD_ID, Config.Type.INSTANCE);
