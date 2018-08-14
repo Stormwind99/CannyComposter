@@ -48,7 +48,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.wrapper.InvWrapper;
 
-public class CompostBinCap /* extends TileEntity */ extends TickingThingCap<IThing> implements ICompostBinCap, IInteractionObject
+public class CompostBinCap extends TickingThingCap<IThing> implements ICompostBinCap, IInteractionObject
 {
     // The {@link Capability} instance
     @CapabilityInject(ICompostBinCap.class)
