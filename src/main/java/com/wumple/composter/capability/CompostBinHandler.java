@@ -6,10 +6,12 @@ import java.util.List;
 import com.wumple.composter.config.ConfigHandler;
 import com.wumple.composter.config.ModConfig;
 import com.wumple.util.adapter.EntityThing;
+import com.wumple.util.adapter.ItemStackThing;
 import com.wumple.util.adapter.TileEntityThing;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -78,6 +80,18 @@ public class CompostBinHandler
         if (ConfigHandler.composters.doesIt(entity))
         {
             CompostBinCapProvider provider = CompostBinCapProvider.createProvider(new EntityThing(entity));
+            event.addCapability(CompostBinCap.ID, provider);
+        }
+    }
+    
+    @SubscribeEvent
+    public static void attachCapabilitiesItemStack(AttachCapabilitiesEvent<ItemStack> event)
+    {
+        ItemStack stack= event.getObject();
+
+        if (ConfigHandler.composters.doesIt(stack))
+        {
+            CompostBinCapProvider provider = CompostBinCapProvider.createProvider(new ItemStackThing(stack));
             event.addCapability(CompostBinCap.ID, provider);
         }
     }

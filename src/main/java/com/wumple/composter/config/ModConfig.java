@@ -1,5 +1,6 @@
 package com.wumple.composter.config;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -21,12 +22,12 @@ public class ModConfig
 {
 	@Name("Enable compost bonemeal")
 	@Config.Comment("Compost triggers plant growth like bonemeal.")
-    public static boolean enableCompostBonemeal = true;
+	public static boolean enableCompostBonemeal = true;
 	
 	@Name("Compost strength")
 	@Config.Comment("The probability that compost will succeed relative to bonemeal.")
 	@RangeDouble(min=0.0, max=1.0)
-    public static double compostBonemealStrength = 0.5F;
+	public static double compostBonemealStrength = 0.5F;
 	
 	@Name("Compost item")
 	@Config.Comment("The item that the compost bin generates")
@@ -51,7 +52,7 @@ public class ModConfig
         @Name("Compost amount")
         @Config.Comment("Compost unit amount, -1 means item doesn't compost")
         @RangeInt(min = -1)
-        public Map<String, Integer> amount = new LinkedHashMap<String, Integer>();
+        public HashMap<String, Integer> amount = new LinkedHashMap<String, Integer>();
     }
     
     @Name("Composters")
