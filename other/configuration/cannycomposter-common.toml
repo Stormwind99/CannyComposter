@@ -27,3 +27,4 @@
 	[General.compostables]
 		"minecraft:arrow" = 30
 		"#forge:dyes" = 30
+		"minecraft:slime_ball" = 0
