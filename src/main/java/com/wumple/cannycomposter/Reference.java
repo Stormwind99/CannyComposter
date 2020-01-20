@@ -4,7 +4,7 @@ public class Reference
 {
     // Mod Constants
 
-    /*
+    // /*
     public static final String MOD_ID = "@MOD_ID@";
     public static final String MOD_NAME = "@MOD_NAME@";
     public static final String BUILD = "@BUILD@";
@@ -12,9 +12,9 @@ public class Reference
     public static final String DEPENDENCIES = "@DEPENDENCIES@";
     public static final String UPDATEJSON = "@UPDATEJSON@";
     public static final String FINGERPRINT = "@FINGERPRINT@";
-    */
+    // */
 
-    // /*
+    /*
     // debugger settings since no Gradle string replacement
     public static final String MOD_ID = "cannycomposter";
     public static final String MOD_NAME = "CannyComposter";
@@ -23,6 +23,6 @@ public class Reference
     public static final String DEPENDENCIES = "required-after:wumpleutil@[3.2,)";
     public static final String UPDATEJSON = "update.json";
     public static final String FINGERPRINT = "";
-    // */
+    */
 }
 
