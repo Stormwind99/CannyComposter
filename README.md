@@ -9,7 +9,7 @@ Use excess organic material, excess food, or [rotten food](https://github.com/St
 * Composter makes compost ([configurable](https://github.com/Stormwind99/CannyComposter/blob/1.14.4/other/configuration/cannycomposter-common.toml#L25), for example can be reverted to "minecraft:bonemeal")
    * Compost is weaker than bonemeal, working only 50% of the time ([configurable](https://github.com/Stormwind99/CannyComposter/blob/1.14.4/other/configuration/cannycomposter-common.toml#L11))
 * Composter takes more time to generate compost ([configurable](https://github.com/Stormwind99/CannyComposter/blob/1.14.4/other/configuration/cannycomposter-common.toml#L13))
-* Since composting generates heat, small puffs of steam will occasionally appeat ([configurable](https://github.com/Stormwind99/CannyComposter/blob/1.14.4/other/configuration/cannycomposter-common.toml#L22))
+* Since composting generates heat, small puffs of steam will occasionally appear ([configurable](https://github.com/Stormwind99/CannyComposter/blob/1.14.4/other/configuration/cannycomposter-common.toml#L22))
 * Make more items compostable in the composter by adding their ids or tags [to the configuration file](https://github.com/Stormwind99/CannyComposter/blob/1.14.4/other/configuration/cannycomposter-common.toml#L27) or to [compostable_level tags](https://github.com/Stormwind99/CannyComposter/tree/1.14.4/src/main/resources/data/forge/tags/items)
    * Composting values are 0 to 100.  The default Minecraft composting values are 30, 50, 65, 85, and 100.
    * To override default configuration and make an item not compostable, [set the value to 0](https://github.com/Stormwind99/CannyComposter/blob/1.14.4/other/configuration/cannycomposter-common.toml#L30).
