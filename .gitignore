@@ -1,5 +1,5 @@
 # eclipse
-/bin
+bin
 *.launch
 .settings
 .metadata
@@ -14,12 +14,15 @@ out
 .idea
 
 # gradle
-/build
+build
 .gradle
 
 # other
-/eclipse
-/run
+eclipse
+run
+
+# Files from Forge MDK
+forge*changelog.txt
 
 ## Private stuffs
 /private.properties
@@ -57,3 +60,8 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# WTH?
+src/generated
+mcmodsrepo
+libs

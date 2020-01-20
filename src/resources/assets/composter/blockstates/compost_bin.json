@@ -1,8 +1,0 @@
-{
-    "variants": {
-        "level=0": { "model": "composter:compost_bin_empty" },
-        "level=1": { "model": "composter:compost_bin_level1" },
-        "level=2": { "model": "composter:compost_bin_level2" },
-        "level=3": { "model": "composter:compost_bin_level3" }
-    }
-}

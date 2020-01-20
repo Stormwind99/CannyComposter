@@ -1,0 +1,37 @@
+{
+    "display": {
+        "icon": {
+            "item": "cannycomposter:compost"
+        },
+        "title": {
+            "translate": "advancements.cannycomposter.make_compost.title"
+        },
+        "description": {
+            "translate": "advancements.cannycomposter.make_compost.description"
+        },
+        "frame": "challenge"
+    },
+    "parent": "minecraft:husbandry/plant_seed",
+    "rewards": {
+        "experience": 10
+    },
+  "criteria": {
+    "has_the_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "cannycomposter:compost"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "minecraft:composter"
+      }
+    }
+  }
+}
+
