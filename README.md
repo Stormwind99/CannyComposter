@@ -5,7 +5,7 @@ Minecraft mod: Compost more stuff!  Turn excess organic material and rotten food
 Use excess organic material, excess food, or [rotten food](https://github.com/Stormwind99/FoodFunk/wiki/Rotten-food) from [Food Funk](https://github.com/Stormwind99/FoodFunk) to generate compost - which enhances plant growth like bonemeal.
 
 1.14.4:
-* Improves Minecraft's composter!  Makes many more organic items compostable by default.
+* Improves Minecraft's composter!  Makes [many more organic items compostable by default](https://github.com/Stormwind99/CannyComposter/blob/1.14.4/src/main/java/com/wumple/cannycomposter/CompostablesConfig.java#L119).
 * Composter makes compost ([configurable](https://github.com/Stormwind99/CannyComposter/blob/1.14.4/other/configuration/cannycomposter-common.toml#L25), for example can be reverted to "minecraft:bonemeal")
    * Compost is weaker than bonemeal, working only 50% of the time ([configurable](https://github.com/Stormwind99/CannyComposter/blob/1.14.4/other/configuration/cannycomposter-common.toml#L11))
 * Composter takes more time to generate compost ([configurable](https://github.com/Stormwind99/CannyComposter/blob/1.14.4/other/configuration/cannycomposter-common.toml#L13))
