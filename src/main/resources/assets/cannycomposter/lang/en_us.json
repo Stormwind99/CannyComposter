@@ -1,5 +1,7 @@
 {
+    "language": "English",
+
     "item.cannycomposter.compost": "Compost",
     "advancements.cannycomposter.make_compost.title": "Wormfood",
-    "advancements.cannycomposter.make_compost.description": "Make compost in a compost bin",
+    "advancements.cannycomposter.make_compost.description": "Make compost in a compost bin"
 }
