@@ -11,6 +11,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
@@ -50,13 +51,21 @@ public class CannyComposterBlock extends XComposterBlock
 		return flevel;
 	}
 
+	// remove => WumpleUtil 3.6
 	@Override
 	protected ItemStack makeCompost()
+	{
+		return new ItemStack(getCompostItem());
+	}
+	
+	// add => WumpleUtil 3.6
+	// @Override
+	protected Item getCompostItem()
 	{
 		IForgeRegistry<Item> reg = GameRegistry.findRegistry(Item.class);
 		ResourceLocation res = new ResourceLocation(ConfigManager.General.compost.get());
 		Item item = reg.getValue(res);
-		return new ItemStack(item);
+		return item;
 	}
 
 	protected boolean addItem(BlockState blockstateIn, IWorld worldIn, BlockPos posIn, ItemStack stackIn)

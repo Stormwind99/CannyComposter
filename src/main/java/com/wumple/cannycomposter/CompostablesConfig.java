@@ -185,6 +185,12 @@ public class CompostablesConfig extends MatchingConfig<Integer>
 		// #forge:seeds
 		// #forge:slimeballs
 		// #forge:string
+		
+		// Food Funk
+		registerCompostable(c, f0, "foodfunk:rotten_food");
+		registerCompostable(c, f0, "rotted_item");
+		registerCompostable(c, f0, "biodegradable_item");
+		// TODO "spoiled_milk" but give back bucket
 	}
 
 }
