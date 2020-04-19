@@ -1,12 +1,13 @@
 {
   "homepage": "https://github.com/Stormwind99/CannyComposter",
   "promos": {
-    "1.14.4-latest": "2.2.0",
-    "1.14.4-recommended": "2.2.0",
+    "1.14.4-latest": "2.3.0",
+    "1.14.4-recommended": "2.3.0",
     "1.12.2-latest": "1.9.2",
     "1.12.2-recommended": "1.9.2"
   },
   "1.14.4": {
+    "2.3.0": "Added special $food nameKey to catch all food items if not specifically listed",
     "2.2.0": "Re-added Food Funk items. Added both old and new composter recipes.",
     "2.1.0": "Library update",
     "2.0.0": "Ported to 1.14.4"

@@ -190,6 +190,7 @@ public class CompostablesConfig extends MatchingConfig<Integer>
 		registerCompostable(c, f0, "foodfunk:rotten_food");
 		registerCompostable(c, f0, "rotted_item");
 		registerCompostable(c, f0, "biodegradable_item");
+		registerCompostable(c, f0, "$food");
 		// TODO "spoiled_milk" but give back bucket
 	}
 
