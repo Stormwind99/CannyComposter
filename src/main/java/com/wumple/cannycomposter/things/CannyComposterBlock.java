@@ -112,7 +112,7 @@ public class CannyComposterBlock extends XComposterBlock
 	}
 	
 	@Override
-	public void tick(BlockState state, World worldIn, BlockPos pos, Random random)
+	public void tick(BlockState state, ServerWorld worldIn, BlockPos pos, Random random)
 	{
 		if (!worldIn.isRemote())
 		{
